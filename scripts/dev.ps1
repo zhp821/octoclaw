@@ -70,28 +70,26 @@ if (-not $back) {
     Write-Success "Frontend built and copied"
 }
 
-# Step 2: Build and Start Backend
-Write-Step "Step 2: Starting Backend"
+# Step 2: Start Backend from source
+Write-Step "Step 2: Starting Backend (from source)"
 Set-Location $BackendDir
 
-Write-Info "Building Go backend..."
-go build -o picoclaw-web.exe .
-if ($LASTEXITCODE -ne 0) {
-    Write-Error "Backend build failed"
-    exit 1
-}
-
-Write-Step "Development Server Running"
-Write-Host "URL: http://localhost:18800" -ForegroundColor Green
+Write-Host "Starting backend from source on http://localhost:18800" -ForegroundColor Green
+Write-Host "Go code changes will be reflected immediately" -ForegroundColor Yellow
 Write-Host "`nFeatures:" -ForegroundColor Yellow
-Write-Host "  - Frontend: Hot reload on file changes" -ForegroundColor Gray
+Write-Host "  - Frontend: http://localhost:18800/" -ForegroundColor Gray
 Write-Host "  - API:      http://localhost:18800/api/..." -ForegroundColor Gray
-Write-Host "  - WebSocket: ws://localhost:18800/ws" -ForegroundColor Gray
+Write-Host "  - Backend:  Auto-restart on code changes (with -watch)" -ForegroundColor Gray
 Write-Host "`nPress Ctrl+C to stop" -ForegroundColor Cyan
 
-# Start backend (this will block)
+# Start backend from source
 try {
-    .\picoclaw-web.exe
+    if ($watch) {
+        Write-Info "Watch mode: Using 'air' for auto-restart (install: go install github.com/cosmtrek/air@latest)"
+        air
+    } else {
+        go run .
+    }
 } catch {
     Write-Error "Backend failed: $_"
     exit 1
