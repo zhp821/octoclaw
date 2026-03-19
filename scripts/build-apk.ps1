@@ -87,20 +87,6 @@ Write-Success "Frontend built"
 Write-Step "Step 3: Building Go Backend"
 Set-Location $BackendDir
 
-# Copy Android stub
-$TraySrc = Join-Path $AppDir "tray_android.go"
-$TrayDst = Join-Path $BackendDir "tray_android.go"
-$Systray = Join-Path $BackendDir "systray.go"
-$SystrayBak = Join-Path $BackendDir "systray.go.bak"
-
-if (Test-Path $TraySrc) {
-    Copy-Item $TraySrc $TrayDst -Force
-    if (Test-Path $Systray) {
-        Rename-Item $Systray $SystrayBak -Force
-    }
-    Write-SubStep "Android stub prepared"
-}
-
 # Build
 $env:GOOS = "android"
 $env:GOARCH = "arm64"
@@ -108,9 +94,6 @@ $env:CGO_ENABLED = "0"
 go build -tags android -ldflags="-s -w" -o "picoclaw-web" .
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
-# Cleanup
-if (Test-Path $TrayDst) { Remove-Item $TrayDst -Force }
-if (Test-Path $SystrayBak) { Rename-Item $SystrayBak $Systray -Force }
 Write-Success "Go backend built"
 
 # Step 4: Copy to Android Assets
