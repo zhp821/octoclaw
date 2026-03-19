@@ -87,12 +87,30 @@ Write-Success "Frontend built"
 Write-Step "Step 3: Building Go Backend"
 Set-Location $BackendDir
 
+# Temporarily rename systray.go (not supported on Android)
+$Systray = Join-Path $BackendDir "systray.go"
+$SystrayBak = Join-Path $BackendDir "systray.go.bak"
+if (Test-Path $Systray) {
+    Rename-Item $Systray $SystrayBak -Force
+    Write-SubStep "Excluded systray.go (Android not supported)"
+}
+
 # Build
 $env:GOOS = "android"
 $env:GOARCH = "arm64"
 $env:CGO_ENABLED = "0"
 go build -tags android -ldflags="-s -w" -o "picoclaw-web" .
-if ($LASTEXITCODE -ne 0) { exit 1 }
+$BuildResult = $LASTEXITCODE
+
+# Restore systray.go
+if (Test-Path $SystrayBak) {
+    Rename-Item $SystrayBak $Systray -Force
+}
+
+if ($BuildResult -ne 0) { 
+    Write-Error "Go build failed"
+    exit 1 
+}
 
 Write-Success "Go backend built"
 
