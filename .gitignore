@@ -19,6 +19,11 @@ Thumbs.db
 
 # Logs
 *.log
+logs/
+picoclaw/logs/
 
 # Test files
 web/backend/test_*.go
+
+# Config
+config.json

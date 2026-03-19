@@ -28,6 +28,10 @@ $PicoclawDir = Join-Path $AppDir "picoclaw"
 $FrontendDir = Join-Path $PicoclawDir "web\frontend"
 $BackendDir = Join-Path $PicoclawDir "web\backend"
 
+# Set environment variables
+$env:PICOCLAW_CONFIG = Join-Path $AppDir "config.json"
+$env:PICOCLAW_LOG_DIR = Join-Path $AppDir "logs"
+
 Write-Step "PicoClaw Local Development (Single Port: 18800)"
 Write-Info "Working directory: $AppDir"
 
@@ -35,6 +39,11 @@ Write-Info "Working directory: $AppDir"
 if (-not (Test-Path $PicoclawDir)) {
     Write-Error "picoclaw directory not found. Run .\init.ps1 first"
     exit 1
+}
+
+# Ensure log directory exists
+if (-not (Test-Path $env:PICOCLAW_HOME)) {
+    New-Item -ItemType Directory -Path $env:PICOCLAW_HOME -Force | Out-Null
 }
 
 # Step 1: Build Frontend (unless -back only)
@@ -77,8 +86,7 @@ if (-not $back) {
 
 # Step 2: Start Backend from source
 Write-Step "Step 2: Starting Backend (from source)"
-$OriginalDir = Get-Location  # Save current directory
-Set-Location $BackendDir
+$env:PICOCLAW_LOG_DIR = $env:PICOCLAW_HOME
 
 Write-Host "Starting backend from source on http://localhost:18800" -ForegroundColor Green
 Write-Host "Go code changes will be reflected immediately" -ForegroundColor Yellow
@@ -86,6 +94,9 @@ Write-Host "`nFeatures:" -ForegroundColor Yellow
 Write-Host "  - Frontend: http://localhost:18800/" -ForegroundColor Gray
 Write-Host "  - API:      http://localhost:18800/api/..." -ForegroundColor Gray
 Write-Host "  - Backend:  Auto-restart on code changes (with -watch)" -ForegroundColor Gray
+Write-Host "`nEnvironment:" -ForegroundColor Yellow
+Write-Host "  - PICOCLAW_CONFIG: $env:PICOCLAW_CONFIG" -ForegroundColor Gray
+Write-Host "  - PICOCLAW_LOG_DIR: $env:PICOCLAW_LOG_DIR" -ForegroundColor Gray
 Write-Host "`nPress Ctrl+C to stop" -ForegroundColor Cyan
 
 # Start backend from source
@@ -93,10 +104,12 @@ $originalDir = Get-Location  # Save current directory
 try {
     Set-Location $BackendDir  # Change to backend directory
     if ($watch) {
-        Write-Info "Watch mode: Using 'air' for auto-restart (install with: go install github.com/cosmtrek/air@latest)"
-        go run . -console-logs
+        Write-Info "Watch mode: Using 'air' for auto-restart (install: go install github.com/cosmtrek/air@latest)"
+        # Start backend passing the config as argument
+        go run . $env:PICOCLAW_CONFIG -console-logs
     } else {
-        go run . -console-logs
+        # Start backend passing the config as argument  
+        go run . $env:PICOCLAW_CONFIG -console-logs
     }
 } catch {
     Write-Error "Backend failed: $_"
