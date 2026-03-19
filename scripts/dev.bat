@@ -1,5 +1,6 @@
 @echo off
 chcp 65001 >nul
+set "ORG_DIR=%CD%"
 
 REM PicoClaw Local Development Script (Single Port)
 REM Builds frontend then starts backend from source on http://localhost:18800
@@ -48,7 +49,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-REM Copy dist to backend
+REM Copy dist to backend  
 if exist "%BACKEND_DIR%\dist" rmdir /S /Q "%BACKEND_DIR%\dist"
 xcopy /E /I /Y "%FRONTEND_DIR%\dist\*" "%BACKEND_DIR%\dist\"
 echo [SUCCESS] Frontend built and copied
@@ -56,7 +57,6 @@ echo.
 
 REM Step 2: Start Backend from Source
 echo === Step 2: Starting Backend (from source) ===
-set "CURRENT_DIR=%CD%"
 cd /d "%BACKEND_DIR%"
 
 echo [INFO] Starting backend from source...
@@ -77,4 +77,4 @@ if errorlevel 1 (
 )
 
 REM Restore original directory
-cd /d "%CURRENT_DIR%"
+cd /d "%ORG_DIR%"
