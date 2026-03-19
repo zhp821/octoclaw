@@ -1,7 +1,7 @@
 # PicoClaw APK Build Script
 #
 # This script:
-# 1. Syncs picoclaw with remote (git fetch + reset --hard)
+# 1. Runs init script to sync with upstream
 # 2. Builds picoclaw frontend
 # 3. Copies picoclaw-app dist to picoclaw backend dist (merge)
 # 4. Builds picoclaw Go backend (embeds frontend)
@@ -10,21 +10,21 @@
 #
 # Usage:
 #   .\scripts\build-apk.ps1              # Build Android (default)
+#   .\scripts\build-apk.ps1 -SkipSync    # Build without syncing upstream
 #   .\scripts\build-apk.ps1 -Platform both     # Build both platforms
 
-# Calculate default paths based on script location
-$ScriptDir = Split-Path -Parent $PSCommandPath
-$DefaultAppDir = Split-Path -Parent $ScriptDir
-$DefaultPicoclawDir = Join-Path $DefaultAppDir "picoclaw"
-
 param(
-    [string]$PicoclawDir = $DefaultPicoclawDir,
-    [string]$AppDir = $DefaultAppDir,
     [string]$RemoteUrl = "https://github.com/zhp821/picoclaw.git",
     [string]$Branch = "main",
     [ValidateSet("android", "ios", "both")]
-    [string]$Platform = "android"
+    [string]$Platform = "android",
+    [switch]$SkipSync
 )
+
+# Calculate paths based on script location
+$ScriptDir = Split-Path -Parent $PSCommandPath
+$AppDir = Split-Path -Parent $ScriptDir
+$PicoclawDir = Join-Path $AppDir "picoclaw"
 
 $ErrorActionPreference = "Stop"
 
@@ -40,6 +40,25 @@ function Write-Step {
 function Write-SubStep {
     param([string]$Message)
     Write-Host "  -> $Message" -ForegroundColor Yellow
+}
+
+# Step 0: Run init script to sync with upstream
+if (-not $SkipSync) {
+    Write-Step "Step 0: Syncing with upstream (init.ps1)"
+    
+    $InitScript = Join-Path $ScriptDir "init.ps1"
+    if (Test-Path $InitScript) {
+        & $InitScript
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "`n[ERROR] Init script failed. Please resolve any conflicts and try again." -ForegroundColor Red
+            Write-Host "You can also skip sync with: .\scripts\build-apk.ps1 -SkipSync" -ForegroundColor Yellow
+            exit 1
+        }
+    } else {
+        Write-SubStep "Warning: init.ps1 not found, skipping upstream sync"
+    }
+} else {
+    Write-Step "Step 0: Skipped upstream sync (--SkipSync flag used)"
 }
 
 # Step 1: Sync picoclaw with remote - ensures clean state
@@ -163,14 +182,6 @@ if (Test-Path $TrayAndroidSource) {
     # Restore router.go using git
     Push-Location $PicoclawDir
     git checkout -- web/backend/api/router.go 2>$null
-    # Restore custom frontend components
-    if (Test-Path $CustomComponentsDir) {
-        Get-ChildItem -Path $CustomComponentsDir -Filter "*.tsx" -Recurse | ForEach-Object {
-            $RelativePath = $_.FullName.Substring($CustomComponentsDir.Length + 1)
-            $DestPath = Join-Path $TargetComponentsDir $RelativePath
-            git checkout -- "src/components/$RelativePath" 2>$null
-        }
-    }
     Pop-Location
 }
 Write-SubStep "Go backend built for Android ARM64"
