@@ -1,252 +1,136 @@
 # PicoClaw App Initialization Script
 #
-# This script initializes the picoclaw-app project:
-# 1. Checks for git and required tools
-# 2. Initializes git submodules
-# 3. Configures upstream remote for syncing
-# 4. Syncs with upstream latest code
-# 5. Installs dependencies
+# This script ONLY syncs code with upstream:
+# 1. Checks for git
+# 2. Initializes/updates git submodules
+# 3. Configures upstream remote
+# 4. Merges upstream latest code
 #
 # Usage:
-#   .\init.ps1                    # Initialize and sync with upstream
-#   .\init.ps1 -Force             # Force re-initialize and clean
-#   .\init.ps1 -SkipSync          # Initialize but skip upstream sync
+#   .\init.ps1                    # Sync with upstream
+#   .\init.ps1 -Force             # Force re-clone submodule
+#   .\init.ps1 -SkipSync          # Skip upstream merge (just check)
 
 param(
     [switch]$Force,
-    [switch]$SkipSync,
-    [switch]$Verbose
+    [switch]$SkipSync
 )
 
 $ErrorActionPreference = "Stop"
 
-# Colors for output
+# Colors
 function Write-Info { param([string]$Message) Write-Host "[INFO] $Message" -ForegroundColor Cyan }
 function Write-Success { param([string]$Message) Write-Host "[SUCCESS] $Message" -ForegroundColor Green }
 function Write-Warning { param([string]$Message) Write-Host "[WARNING] $Message" -ForegroundColor Yellow }
 function Write-Error { param([string]$Message) Write-Host "[ERROR] $Message" -ForegroundColor Red }
-function Write-Step { param([string]$Message) Write-Host "`n========================================" -ForegroundColor Cyan; Write-Host $Message -ForegroundColor Cyan; Write-Host "========================================" -ForegroundColor Cyan }
+function Write-Step { param([string]$Message) Write-Host "`n=== $Message ===" -ForegroundColor Cyan }
 
-# Get script directory
+# Paths
 $ScriptDir = Split-Path -Parent $PSCommandPath
 $AppDir = Split-Path -Parent $ScriptDir
 $PicoclawDir = Join-Path $AppDir "picoclaw"
-
 $UpstreamUrl = "https://github.com/sipeed/picoclaw.git"
 
-Write-Step "PicoClaw App Initialization"
-Write-Info "Working directory: $AppDir"
+Write-Step "PicoClaw App - Code Sync"
 
-# Step 1: Check prerequisites
-Write-Step "Step 1: Checking Prerequisites"
-
-# Check Git
+# Step 1: Check Git
+Write-Step "Checking Git"
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
-    Write-Error "Git is not installed. Please install Git first."
-    Write-Info "Download: https://git-scm.com/downloads"
+    Write-Error "Git not found. Download: https://git-scm.com/downloads"
     exit 1
 }
-Write-Success "Git found"
+Write-Success "Git OK"
 
-# Check Node.js
-if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
-    Write-Error "Node.js is not installed. Please install Node.js first."
-    Write-Info "Download: https://nodejs.org/ (LTS version recommended)"
-    exit 1
-}
-Write-Success "Node.js found"
-
-# Check Go
-if (-not (Get-Command go -ErrorAction SilentlyContinue)) {
-    Write-Error "Go is not installed. Please install Go first."
-    Write-Info "Download: https://go.dev/dl/"
-    exit 1
-}
-Write-Success "Go found"
-
-Write-Success "Prerequisites check completed"
-
-# Step 2: Initialize submodules
-Write-Step "Step 2: Initializing Git Submodules"
-
+# Step 2: Init/Update Submodule
+Write-Step "Initializing Submodule"
 Set-Location $AppDir
 
-if ($Force) {
-    Write-Warning "Force mode enabled. Cleaning submodule..."
-    if (Test-Path $PicoclawDir) {
-        Remove-Item -Path $PicoclawDir -Recurse -Force -ErrorAction SilentlyContinue
-    }
+if ($Force -and (Test-Path $PicoclawDir)) {
+    Write-Warning "Force mode: removing old submodule..."
+    Remove-Item -Path $PicoclawDir -Recurse -Force
 }
 
-# Check if .gitmodules exists
 if (-not (Test-Path ".gitmodules")) {
-    Write-Info "Creating submodule configuration..."
+    Write-Info "Creating submodule..."
     git submodule add $UpstreamUrl picoclaw
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "Failed to add submodule"
-        exit 1
-    }
     git commit -m "Add picoclaw submodule" -q
+} else {
+    Write-Info "Updating submodule..."
+    git submodule update --init --recursive
 }
-
-# Initialize/Update submodule
-Write-Info "Cloning picoclaw submodule..."
-git submodule update --init --recursive --force
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Error "Failed to initialize submodules"
+    Write-Error "Submodule init failed"
     exit 1
 }
+Write-Success "Submodule ready"
 
-Write-Success "Submodules initialized"
-
-# Step 3: Configure upstream and sync
-Write-Step "Step 3: Configuring Upstream Sync"
-
+# Step 3: Configure Upstream
+Write-Step "Configuring Upstream"
 Set-Location $PicoclawDir
 
-# Check if upstream remote exists
 $upstreamExists = git remote -v | Select-String "upstream"
-
 if (-not $upstreamExists) {
-    Write-Info "Adding upstream remote: $UpstreamUrl"
     git remote add upstream $UpstreamUrl
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "Failed to add upstream remote"
-        exit 1
-    }
     Write-Success "Upstream remote added"
 } else {
-    Write-Info "Upstream remote already exists"
-    # Update upstream URL if needed
     git remote set-url upstream $UpstreamUrl
+    Write-Info "Upstream already configured"
 }
 
-# Show current remotes
-Write-Info "Current remotes:"
-git remote -v | ForEach-Object { Write-Info "  $_" }
+# Show remotes
+Write-Info "Remotes:"
+git remote -v | ForEach-Object { Write-Host "  $_" }
 
+# Step 4: Sync with Upstream
 if (-not $SkipSync) {
-    Write-Step "Step 4: Syncing with Upstream"
+    Write-Step "Syncing with Upstream"
     
-    # Fetch upstream
-    Write-Info "Fetching upstream latest code..."
     git fetch upstream
-    
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Failed to fetch upstream"
         exit 1
     }
     
-    # Get current branch
-    $currentBranch = git rev-parse --abbrev-ref HEAD
-    Write-Info "Current branch: $currentBranch"
-    
-    # Check if local branch has uncommitted changes
+    # Stash local changes if any
     $hasChanges = git status --porcelain
     if ($hasChanges) {
-        Write-Warning "Local has uncommitted changes, stashing..."
-        git stash push -m "Auto-stash before upstream sync"
+        Write-Warning "Stashing local changes..."
+        git stash push -m "Before upstream sync"
     }
     
-    # Try to merge upstream changes
-    Write-Info "Merging upstream/main into local branch..."
+    # Merge
+    Write-Info "Merging upstream/main..."
     git merge upstream/main --no-edit
     
     if ($LASTEXITCODE -ne 0) {
-        Write-Warning "Merge conflicts detected!"
-        Write-Info "Please resolve conflicts manually:"
-        Write-Info "  1. Check conflicted files: git status"
-        Write-Info "  2. Edit files to resolve conflicts"
-        Write-Info "  3. Stage resolved files: git add <file>"
-        Write-Info "  4. Complete merge: git commit"
-        Write-Info ""
-        Write-Info "Or abort merge: git merge --abort"
+        Write-Error "Merge conflict! Please resolve manually:"
+        Write-Info "  1. git status (see conflicts)"
+        Write-Info "  2. Edit and fix conflicts"
+        Write-Info "  3. git add . && git commit"
+        Write-Info "  4. Or: git merge --abort"
         exit 1
     }
     
-    # Restore stashed changes if any
+    # Restore stashed changes
     if ($hasChanges) {
-        Write-Info "Restoring local changes..."
         git stash pop
     }
     
-    Write-Success "Successfully synced and merged with upstream"
-    
-    # Show latest commits
-    Write-Info "Recent commits:"
-    git log --oneline -3 | ForEach-Object { Write-Info "  $_" }
+    Write-Success "Synced with upstream"
+    git log --oneline -1 | Write-Host
 } else {
-    Write-Warning "Upstream sync skipped (--SkipSync flag used)"
+    Write-Warning "Sync skipped (--SkipSync)"
 }
 
+# Update parent repo reference
 Set-Location $AppDir
-
-# Step 5: Update submodule reference in parent repo
-Write-Step "Step 5: Updating Submodule Reference"
-
-# Check if submodule reference needs update
 $submoduleStatus = git submodule status picoclaw
 if ($submoduleStatus -match "^") {
-    Write-Info "Submodule has changes, committing reference update..."
     git add picoclaw
-    git commit -m "Update picoclaw submodule to upstream latest" -q
-    Write-Success "Submodule reference updated"
-} else {
-    Write-Info "Submodule reference is up to date"
+    git commit -m "Update picoclaw submodule" -q 2>$null
 }
 
-# Step 6: Install dependencies
-Write-Step "Step 6: Installing Dependencies"
-
-# Install dependencies for picoclaw frontend
-$PicoclawFrontendDir = Join-Path $PicoclawDir "web\frontend"
-if (Test-Path $PicoclawFrontendDir) {
-    Set-Location $PicoclawFrontendDir
-    
-    if (Test-Path "package.json") {
-        Write-Info "Installing picoclaw frontend dependencies..."
-        if (Test-Path "node_modules") {
-            Write-Info "node_modules exists, skipping npm install"
-        } else {
-            npm install
-            if ($LASTEXITCODE -ne 0) {
-                Write-Error "Failed to install frontend dependencies"
-                exit 1
-            }
-        }
-        Write-Success "Frontend dependencies installed"
-    }
-}
-
-# Install dependencies for app
-Set-Location $AppDir
-if (Test-Path "package.json") {
-    Write-Info "Installing app dependencies..."
-    if (Test-Path "node_modules") {
-        Write-Info "node_modules exists, skipping npm install"
-    } else {
-        npm install
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error "Failed to install app dependencies"
-            exit 1
-        }
-    }
-    Write-Success "App dependencies installed"
-}
-
-Write-Step "Initialization Completed!"
-Write-Success "PicoClaw App is ready at: $AppDir"
-
-Write-Info ""
-Write-Info "Next steps:"
-Write-Info "  1. Review the synced code: cd picoclaw && git log --oneline -5"
-Write-Info "  2. Build the APK: .\scripts\build-apk.ps1"
-Write-Info "  3. Install to device: adb install -r PicoClaw-android.apk"
-Write-Info ""
-Write-Info "To sync with upstream again later:"
-Write-Info "  cd picoclaw"
-Write-Info "  git fetch upstream"
-Write-Info "  git reset --hard upstream/main"
-Write-Info "  cd .."
-Write-Info "  git add picoclaw && git commit -m 'Update submodule'"
+Write-Step "Sync Complete!"
+Write-Success "Code is up to date"
+Write-Info "Next: .\scripts\build-apk.ps1 (to build)"
