@@ -142,20 +142,40 @@ if (-not $SkipSync) {
     $currentBranch = git rev-parse --abbrev-ref HEAD
     Write-Info "Current branch: $currentBranch"
     
-    # Reset to upstream latest (force sync)
-    Write-Info "Syncing local code with upstream/main..."
-    git reset --hard upstream/main
+    # Check if local branch has uncommitted changes
+    $hasChanges = git status --porcelain
+    if ($hasChanges) {
+        Write-Warning "Local has uncommitted changes, stashing..."
+        git stash push -m "Auto-stash before upstream sync"
+    }
+    
+    # Try to merge upstream changes
+    Write-Info "Merging upstream/main into local branch..."
+    git merge upstream/main --no-edit
     
     if ($LASTEXITCODE -ne 0) {
-        Write-Error "Failed to sync with upstream"
+        Write-Warning "Merge conflicts detected!"
+        Write-Info "Please resolve conflicts manually:"
+        Write-Info "  1. Check conflicted files: git status"
+        Write-Info "  2. Edit files to resolve conflicts"
+        Write-Info "  3. Stage resolved files: git add <file>"
+        Write-Info "  4. Complete merge: git commit"
+        Write-Info ""
+        Write-Info "Or abort merge: git merge --abort"
         exit 1
     }
     
-    Write-Success "Synced with upstream latest code"
+    # Restore stashed changes if any
+    if ($hasChanges) {
+        Write-Info "Restoring local changes..."
+        git stash pop
+    }
     
-    # Show latest commit
-    $latestCommit = git log -1 --oneline
-    Write-Info "Latest commit: $latestCommit"
+    Write-Success "Successfully synced and merged with upstream"
+    
+    # Show latest commits
+    Write-Info "Recent commits:"
+    git log --oneline -3 | ForEach-Object { Write-Info "  $_" }
 } else {
     Write-Warning "Upstream sync skipped (--SkipSync flag used)"
 }
