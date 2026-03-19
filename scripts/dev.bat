@@ -1,8 +1,8 @@
 @echo off
-chcp 65001
+chcp 65001 >nul
 
-REM PicoClaw Local Development Script
-REM This script starts both frontend and backend for local development
+REM PicoClaw Local Development Script (Single Port)
+REM Builds frontend then starts backend from source on http://localhost:18800
 
 echo ========================================
 echo PicoClaw Local Development
@@ -18,38 +18,17 @@ set "BACKEND_DIR=%PICOCLAW_DIR%\web\backend"
 
 REM Check directories exist
 if not exist "%PICOCLAW_DIR%" (
-    echo [ERROR] picoclaw directory not found: %PICOCLAW_DIR%
+    echo [ERROR] picoclaw directory not found
     echo Please run init.ps1 first
     exit /b 1
 )
 
 echo [INFO] Working directory: %APP_DIR%
-echo [INFO] Frontend: %FRONTEND_DIR%
-echo [INFO] Backend: %BACKEND_DIR%
+echo [INFO] All services on: http://localhost:18800
 echo.
 
-REM Step 1: Start Backend
-echo === Starting Go Backend ===
-cd /d "%BACKEND_DIR%"
-
-REM Build and run backend
-echo [INFO] Building backend...
-go build -o picoclaw-web.exe .
-if errorlevel 1 (
-    echo [ERROR] Backend build failed
-    exit /b 1
-)
-
-echo [INFO] Starting backend on http://localhost:18800
-echo [INFO] API docs: http://localhost:18800/api
-echo.
-start "PicoClaw Backend" cmd /k "cd /d %BACKEND_DIR% && picoclaw-web.exe"
-
-REM Wait for backend to start
-timeout /t 3 /nobreak > nul
-
-REM Step 2: Start Frontend Dev Server
-echo === Starting Frontend Dev Server ===
+REM Step 1: Build Frontend
+echo === Step 1: Building Frontend ===
 cd /d "%FRONTEND_DIR%"
 
 REM Check node_modules
@@ -62,36 +41,36 @@ if not exist "node_modules" (
     )
 )
 
-echo [INFO] Starting frontend dev server on http://localhost:5173
-echo [INFO] Frontend will auto-reload on code changes
-echo.
-start "PicoClaw Frontend" cmd /k "cd /d %FRONTEND_DIR% && npm run dev"
+echo [INFO] Building frontend to backend/dist...
+npm run build
+if errorlevel 1 (
+    echo [ERROR] Frontend build failed
+    exit /b 1
+)
 
+REM Copy dist to backend
+if exist "%BACKEND_DIR%\dist" rmdir /S /Q "%BACKEND_DIR%\dist"
+xcopy /E /I /Y "%FRONTEND_DIR%\dist\*" "%BACKEND_DIR%\dist\"
+echo [SUCCESS] Frontend built and copied
 echo.
-echo ========================================
-echo [SUCCESS] Development servers started!
-echo ========================================
-echo.
-echo Backend:  http://localhost:18800
-echo Frontend: http://localhost:5173
-echo.
-echo API Endpoints:
-echo   - http://localhost:18800/api/models
-echo   - http://localhost:18800/api/config
-echo   - http://localhost:18800/api/gateway/status
-echo.
-echo Frontend Dev Features:
-echo   - Hot reload: Changes appear instantly
-echo   - Source maps: Debug in browser
-echo   - Proxy: API calls auto-forwarded to backend
-echo.
-echo Press any key to stop all servers...
-pause > nul
 
-REM Stop servers
-taskkill /F /IM picoclaw-web.exe 2>nul
-taskkill /F /IM node.exe 2>nul
+REM Step 2: Start Backend from Source
+echo === Step 2: Starting Backend (from source) ===
+cd /d "%BACKEND_DIR%"
 
+echo [INFO] Starting backend from source...
+echo [INFO] URL: http://localhost:18800
+echo [INFO] Features:
+echo   - Frontend: http://localhost:18800/
+echo   - API:      http://localhost:18800/api/...
+echo   - Backend:  Code changes reflect immediately
 echo.
-echo [INFO] Servers stopped
+echo Press Ctrl+C to stop
 echo.
+
+REM Start backend from source
+go run .
+if errorlevel 1 (
+    echo [ERROR] Backend failed
+    exit /b 1
+)
