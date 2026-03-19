@@ -69,7 +69,7 @@ echo Press Ctrl+C to stop
 echo.
 
 REM Start backend from source
-go run .
+go run . -console-logs
 if errorlevel 1 (
     echo [ERROR] Backend failed
     exit /b 1

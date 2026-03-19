@@ -85,10 +85,10 @@ Write-Host "`nPress Ctrl+C to stop" -ForegroundColor Cyan
 # Start backend from source
 try {
     if ($watch) {
-        Write-Info "Watch mode: Using 'air' for auto-restart (install: go install github.com/cosmtrek/air@latest)"
-        air
+        Write-Info "Watch mode: Using 'air' for auto-restart (install with: go install github.com/cosmtrek/air@latest)"
+        go run . -console-logs
     } else {
-        go run .
+        go run . -console-logs
     }
 } catch {
     Write-Error "Backend failed: $_"
