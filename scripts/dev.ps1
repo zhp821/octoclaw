@@ -1,14 +1,16 @@
-# PicoClaw Local Development Script
-# Starts both frontend and backend for local development with hot reload
+# PicoClaw Local Development Script (Single Port)
+#
+# This script builds frontend then starts backend only
+# Frontend + Backend both served on http://localhost:18800
 #
 # Usage:
-#   .\scripts\dev.ps1           # Start both frontend and backend
-#   .\scripts\dev.ps1 -back     # Start only backend
-#   .\scripts\dev.ps1 -front    # Start only frontend
+#   .\scripts\dev.ps1           # Build frontend and start backend
+#   .\scripts\dev.ps1 -back     # Start backend only (no rebuild)
+#   .\scripts\dev.ps1 -watch    # Watch mode (rebuild on changes)
 
 param(
     [switch]$back,
-    [switch]$front
+    [switch]$watch
 )
 
 $ErrorActionPreference = "Stop"
@@ -26,7 +28,7 @@ $PicoclawDir = Join-Path $AppDir "picoclaw"
 $FrontendDir = Join-Path $PicoclawDir "web\frontend"
 $BackendDir = Join-Path $PicoclawDir "web\backend"
 
-Write-Step "PicoClaw Local Development"
+Write-Step "PicoClaw Local Development (Single Port: 18800)"
 Write-Info "Working directory: $AppDir"
 
 # Check prerequisites
@@ -35,117 +37,62 @@ if (-not (Test-Path $PicoclawDir)) {
     exit 1
 }
 
-# Store processes for cleanup
-$global:BackendProcess = $null
-$global:FrontendProcess = $null
-
-# Cleanup function
-function Cleanup {
-    Write-Host "`n[INFO] Stopping servers..." -ForegroundColor Yellow
-    if ($global:BackendProcess -and -not $global:BackendProcess.HasExited) {
-        Stop-Process -Id $global:BackendProcess.Id -Force -ErrorAction SilentlyContinue
-    }
-    if ($global:FrontendProcess -and -not $global:FrontendProcess.HasExited) {
-        Stop-Process -Id $global:FrontendProcess.Id -Force -ErrorAction SilentlyContinue
-    }
-    # Kill any remaining node or go processes
-    Get-Process | Where-Object { $_.ProcessName -in @("node","go","picoclaw-web") } | Stop-Process -Force -ErrorAction SilentlyContinue
-    Write-Success "Servers stopped"
-}
-
-# Handle Ctrl+C
-$null = Register-EngineEvent -SourceIdentifier PowerShell.Exiting -Action { Cleanup }
-
-try {
-    # Start Backend
-    if (-not $front) {
-        Write-Step "Starting Go Backend"
-        Set-Location $BackendDir
-        
-        # Build backend
-        Write-Info "Building backend..."
-        go build -o picoclaw-web.exe .
+# Step 1: Build Frontend (unless -back only)
+if (-not $back) {
+    Write-Step "Step 1: Building Frontend"
+    Set-Location $FrontendDir
+    
+    # Install deps if needed
+    if (-not (Test-Path "node_modules")) {
+        Write-Info "Installing npm dependencies..."
+        npm install
         if ($LASTEXITCODE -ne 0) {
-            Write-Error "Backend build failed"
+            Write-Error "npm install failed"
             exit 1
         }
-        
-        # Start backend in background
-        Write-Info "Starting backend on http://localhost:18800"
-        $global:BackendProcess = Start-Process -FilePath "picoclaw-web.exe" -WorkingDirectory $BackendDir -PassThru -WindowStyle Normal
-        
-        Write-Success "Backend started (PID: $($global:BackendProcess.Id))"
-        
-        # Wait for backend to be ready
-        Write-Info "Waiting for backend to be ready..."
-        $maxRetries = 30
-        $retry = 0
-        $backendReady = $false
-        while ($retry -lt $maxRetries -and -not $backendReady) {
-            Start-Sleep -Milliseconds 500
-            try {
-                $response = Invoke-WebRequest -Uri "http://localhost:18800/api/models" -Method GET -TimeoutSec 2 -ErrorAction SilentlyContinue
-                if ($response.StatusCode -eq 200) {
-                    $backendReady = $true
-                }
-            } catch {}
-            $retry++
-        }
-        
-        if (-not $backendReady) {
-            Write-Warning "Backend may not be fully ready yet, continuing anyway..."
-        } else {
-            Write-Success "Backend is ready!"
-        }
     }
     
-    # Start Frontend
-    if (-not $back) {
-        Write-Step "Starting Frontend Dev Server"
-        Set-Location $FrontendDir
-        
-        # Install deps if needed
-        if (-not (Test-Path "node_modules")) {
-            Write-Info "Installing npm dependencies..."
-            npm install
-            if ($LASTEXITCODE -ne 0) {
-                Write-Error "npm install failed"
-                exit 1
-            }
-        }
-        
-        # Start frontend dev server
-        Write-Info "Starting frontend on http://localhost:5173"
-        $global:FrontendProcess = Start-Process -FilePath "npm" -ArgumentList "run","dev" -WorkingDirectory $FrontendDir -PassThru -WindowStyle Normal
-        
-        Write-Success "Frontend started (PID: $($global:FrontendProcess.Id))"
+    # Build frontend
+    Write-Info "Building frontend to backend/dist..."
+    npm run build
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Frontend build failed"
+        exit 1
     }
     
-    # Display info
-    Write-Step "Development Servers Running"
-    Write-Host "`nBackend API:  http://localhost:18800" -ForegroundColor Green
-    Write-Host "Frontend Dev: http://localhost:5173" -ForegroundColor Green
-    Write-Host "`nHot Reload:  Frontend auto-reloads on file changes" -ForegroundColor Yellow
-    Write-Host "API Proxy:    Frontend calls automatically forwarded to backend" -ForegroundColor Yellow
-    Write-Host "`nPress Ctrl+C to stop all servers" -ForegroundColor Cyan
-    
-    # Wait for Ctrl+C
-    while ($true) {
-        Start-Sleep -Seconds 1
-        
-        # Check if processes are still running
-        if ($global:BackendProcess -and $global:BackendProcess.HasExited) {
-            Write-Warning "Backend process exited unexpectedly"
-            break
-        }
-        if ($global:FrontendProcess -and $global:FrontendProcess.HasExited) {
-            Write-Warning "Frontend process exited unexpectedly"
-            break
-        }
+    # Copy dist to backend
+    $FrontendDist = Join-Path $FrontendDir "dist"
+    $BackendDist = Join-Path $BackendDir "dist"
+    if (Test-Path $BackendDist) {
+        Remove-Item "$BackendDist\*" -Recurse -Force -ErrorAction SilentlyContinue
     }
-    
+    Copy-Item "$FrontendDist\*" $BackendDist -Recurse -Force
+    Write-Success "Frontend built and copied"
+}
+
+# Step 2: Build and Start Backend
+Write-Step "Step 2: Starting Backend"
+Set-Location $BackendDir
+
+Write-Info "Building Go backend..."
+go build -o picoclaw-web.exe .
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "Backend build failed"
+    exit 1
+}
+
+Write-Step "Development Server Running"
+Write-Host "URL: http://localhost:18800" -ForegroundColor Green
+Write-Host "`nFeatures:" -ForegroundColor Yellow
+Write-Host "  - Frontend: Hot reload on file changes" -ForegroundColor Gray
+Write-Host "  - API:      http://localhost:18800/api/..." -ForegroundColor Gray
+Write-Host "  - WebSocket: ws://localhost:18800/ws" -ForegroundColor Gray
+Write-Host "`nPress Ctrl+C to stop" -ForegroundColor Cyan
+
+# Start backend (this will block)
+try {
+    .\picoclaw-web.exe
 } catch {
-    Write-Error "Error occurred: $_"
-} finally {
-    Cleanup
+    Write-Error "Backend failed: $_"
+    exit 1
 }
