@@ -15,7 +15,7 @@
 # Calculate default paths based on script location
 $ScriptDir = Split-Path -Parent $PSCommandPath
 $DefaultAppDir = Split-Path -Parent $ScriptDir
-$DefaultPicoclawDir = Join-Path (Split-Path -Parent $DefaultAppDir) "picoclaw"
+$DefaultPicoclawDir = Join-Path $DefaultAppDir "picoclaw"
 
 param(
     [string]$PicoclawDir = $DefaultPicoclawDir,
