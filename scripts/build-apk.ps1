@@ -11,11 +11,13 @@
 #
 # Usage:
 #   .\build-apk.ps1              # Build Android (default)
+#   .\build-apk.ps1 -Sync        # Sync upstream then build
 #   .\build-apk.ps1 -Platform both     # Build both platforms
 
 param(
     [ValidateSet("android", "ios", "both")]
-    [string]$Platform = "android"
+    [string]$Platform = "android",
+    [switch]$Sync
 )
 
 $ErrorActionPreference = "Stop"
@@ -29,6 +31,23 @@ function Write-Step { param([string]$Message) Write-Host "`n=== $Message ===" -F
 function Write-SubStep { param([string]$Message) Write-Host "  -> $Message" -ForegroundColor Yellow }
 function Write-Success { param([string]$Message) Write-Host "[SUCCESS] $Message" -ForegroundColor Green }
 function Write-Error { param([string]$Message) Write-Host "[ERROR] $Message" -ForegroundColor Red }
+
+# Sync with upstream if -Sync flag is set
+if ($Sync) {
+    Write-Step "Syncing with upstream"
+    $InitScript = Join-Path $ScriptDir "init.ps1"
+    if (Test-Path $InitScript) {
+        & $InitScript
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Sync failed. Please resolve conflicts before building."
+            Write-Host "Run '.\scripts\init.ps1' manually to see details." -ForegroundColor Yellow
+            exit 1
+        }
+    } else {
+        Write-Error "init.ps1 not found"
+        exit 1
+    }
+}
 
 # Check picoclaw exists
 if (-not (Test-Path $PicoclawDir)) {
