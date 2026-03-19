@@ -3,12 +3,12 @@
 #
 # Usage:
 #   .\scripts\dev.ps1           # Start both frontend and backend
-#   .\scripts\dev.ps1 -BackendOnly   # Start only backend
-#   .\scripts\dev.ps1 -FrontendOnly  # Start only frontend
+#   .\scripts\dev.ps1 -back     # Start only backend
+#   .\scripts\dev.ps1 -front    # Start only frontend
 
 param(
-    [switch]$BackendOnly,
-    [switch]$FrontendOnly
+    [switch]$back,
+    [switch]$front
 )
 
 $ErrorActionPreference = "Stop"
@@ -58,7 +58,7 @@ $null = Register-EngineEvent -SourceIdentifier PowerShell.Exiting -Action { Clea
 
 try {
     # Start Backend
-    if (-not $FrontendOnly) {
+    if (-not $front) {
         Write-Step "Starting Go Backend"
         Set-Location $BackendDir
         
@@ -100,7 +100,7 @@ try {
     }
     
     # Start Frontend
-    if (-not $BackendOnly) {
+    if (-not $back) {
         Write-Step "Starting Frontend Dev Server"
         Set-Location $FrontendDir
         
