@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+PicoClaw-android.apk
+android/app/build/
+android/.gradle/
+android/app/src/main/jniLibs/arm64-v8a/*.so
+android/app/src/main/assets/public/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Test files
+web/backend/test_*.go

@@ -85,6 +85,19 @@ Write-Success "Frontend built"
 
 # Step 3: Build Go Backend
 Write-Step "Step 3: Building Go Backend"
+
+# Copy frontend dist to backend (required for embed and Android assets)
+$FrontendDist = Join-Path $FrontendDir "dist"
+$BackendDist = Join-Path $BackendDir "dist"
+if (Test-Path $FrontendDist) {
+    if (Test-Path $BackendDist) {
+        Remove-Item "$BackendDist\*" -Recurse -Force -ErrorAction SilentlyContinue
+    }
+    New-Item -ItemType Directory -Path $BackendDist -Force | Out-Null
+    Copy-Item "$FrontendDist\*" $BackendDist -Recurse -Force
+    Write-SubStep "Frontend dist copied to backend"
+}
+
 Set-Location $BackendDir
 
 $env:GOOS = "android"
