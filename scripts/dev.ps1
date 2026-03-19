@@ -40,6 +40,7 @@ if (-not (Test-Path $PicoclawDir)) {
 # Step 1: Build Frontend (unless -back only)
 if (-not $back) {
     Write-Step "Step 1: Building Frontend"
+    $OriginalDir = Get-Location  # Save current directory
     Set-Location $FrontendDir
     
     # Install deps if needed
@@ -68,10 +69,13 @@ if (-not $back) {
     }
     Copy-Item "$FrontendDist\*" $BackendDist -Recurse -Force
     Write-Success "Frontend built and copied"
+    
+    Set-Location $OriginalDir  # Restore original directory
 }
 
 # Step 2: Start Backend from source
 Write-Step "Step 2: Starting Backend (from source)"
+$OriginalDir = Get-Location  # Save current directory
 Set-Location $BackendDir
 
 Write-Host "Starting backend from source on http://localhost:18800" -ForegroundColor Green
@@ -90,6 +94,12 @@ try {
     } else {
         go run . -console-logs
     }
+} catch {
+    Write-Error "Backend failed: $_"
+    exit 1
+} finally {
+    Set-Location $OriginalDir  # Restore original directory
+}
 } catch {
     Write-Error "Backend failed: $_"
     exit 1

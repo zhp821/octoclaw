@@ -56,6 +56,7 @@ echo.
 
 REM Step 2: Start Backend from Source
 echo === Step 2: Starting Backend (from source) ===
+set "CURRENT_DIR=%CD%"
 cd /d "%BACKEND_DIR%"
 
 echo [INFO] Starting backend from source...
@@ -74,3 +75,6 @@ if errorlevel 1 (
     echo [ERROR] Backend failed
     exit /b 1
 )
+
+REM Restore original directory
+cd /d "%CURRENT_DIR%"
