@@ -40,37 +40,39 @@ if (-not (Test-Path $PicoclawDir)) {
 # Step 1: Build Frontend (unless -back only)
 if (-not $back) {
     Write-Step "Step 1: Building Frontend"
-    $OriginalDir = Get-Location  # Save current directory
-    Set-Location $FrontendDir
-    
-    # Install deps if needed
-    if (-not (Test-Path "node_modules")) {
-        Write-Info "Installing npm dependencies..."
-        npm install
+    $originalDir = Get-Location  # Save current directory
+    try {
+        Set-Location $FrontendDir  # Change to frontend directory
+        
+        # Install deps if needed
+        if (-not (Test-Path "node_modules")) {
+            Write-Info "Installing npm dependencies..."
+            npm install
+            if ($LASTEXITCODE -ne 0) {
+                Write-Error "npm install failed"
+                exit 1
+            }
+        }
+        
+        # Build frontend
+        Write-Info "Building frontend to backend/dist..."
+        npm run build
         if ($LASTEXITCODE -ne 0) {
-            Write-Error "npm install failed"
+            Write-Error "Frontend build failed"
             exit 1
         }
+        
+        # Copy dist to backend
+        $FrontendDist = Join-Path $FrontendDir "dist"
+        $BackendDist = Join-Path $BackendDir "dist"
+        if (Test-Path $BackendDist) {
+            Remove-Item "$BackendDist\*" -Recurse -Force -ErrorAction SilentlyContinue
+        }
+        Copy-Item "$FrontendDist\*" $BackendDist -Recurse -Force
+        Write-Success "Frontend built and copied"
+    } finally {
+        Set-Location $originalDir  # Restore original directory
     }
-    
-    # Build frontend
-    Write-Info "Building frontend to backend/dist..."
-    npm run build
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "Frontend build failed"
-        exit 1
-    }
-    
-    # Copy dist to backend
-    $FrontendDist = Join-Path $FrontendDir "dist"
-    $BackendDist = Join-Path $BackendDir "dist"
-    if (Test-Path $BackendDist) {
-        Remove-Item "$BackendDist\*" -Recurse -Force -ErrorAction SilentlyContinue
-    }
-    Copy-Item "$FrontendDist\*" $BackendDist -Recurse -Force
-    Write-Success "Frontend built and copied"
-    
-    Set-Location $OriginalDir  # Restore original directory
 }
 
 # Step 2: Start Backend from source
@@ -87,7 +89,9 @@ Write-Host "  - Backend:  Auto-restart on code changes (with -watch)" -Foregroun
 Write-Host "`nPress Ctrl+C to stop" -ForegroundColor Cyan
 
 # Start backend from source
+$originalDir = Get-Location  # Save current directory
 try {
+    Set-Location $BackendDir  # Change to backend directory
     if ($watch) {
         Write-Info "Watch mode: Using 'air' for auto-restart (install with: go install github.com/cosmtrek/air@latest)"
         go run . -console-logs
@@ -98,9 +102,5 @@ try {
     Write-Error "Backend failed: $_"
     exit 1
 } finally {
-    Set-Location $OriginalDir  # Restore original directory
-}
-} catch {
-    Write-Error "Backend failed: $_"
-    exit 1
+    Set-Location $originalDir  # Restore original directory
 }
