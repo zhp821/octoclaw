@@ -10,15 +10,16 @@
 # Prerequisites: Run .\init.ps1 first to sync code
 #
 # Usage:
-#   .\build-apk.ps1              # Build Android (default)
-#   .\build-apk.ps1 -Sync        # Sync upstream then build
-#   .\build-apk.ps1 -Platform both     # Build both platforms
+#   .\build-apk.ps1              # Build Android debug
+#   .\build-apk.ps1 any          # Build Android release (any parameter = release)
 
 param(
     [ValidateSet("android", "ios", "both")]
     [string]$Platform = "android",
     [switch]$Sync
 )
+
+$IsRelease = $args.Count -gt 0
 
 $ErrorActionPreference = "Stop"
 
@@ -125,12 +126,6 @@ Remove-Item "$PublicDir\*" -Recurse -Force -ErrorAction SilentlyContinue
 Copy-Item "$DistDir\*" $PublicDir -Recurse -Force
 Write-SubStep "Frontend assets copied"
 
-# Copy config
-$ConfigDir = Join-Path $AssetsDir "backend"
-New-Item -ItemType Directory -Path $ConfigDir -Force | Out-Null
-Copy-Item (Join-Path $AppDir "config.json") (Join-Path $ConfigDir "config.json") -Force
-Write-SubStep "Config copied"
-
 # Copy binary
 Copy-Item (Join-Path $BackendDir "picoclaw-web") (Join-Path $JniDir "libpicoclaw-web.so") -Force
 Write-SubStep "Binary copied"
@@ -141,18 +136,27 @@ if ($Platform -eq "android" -or $Platform -eq "both") {
     $AndroidDir = Join-Path $AppDir "android"
     Set-Location $AndroidDir
     
-    ./gradlew clean assembleDebug
+    $ApkBuildType = if ($IsRelease) { "release" } else { "debug" }
+    ./gradlew clean assemble$ApkBuildType
     if ($LASTEXITCODE -ne 0) { exit 1 }
-    
-    $ApkPath = Join-Path $AppDir "PicoClaw-android.apk"
-    Copy-Item "app\build\outputs\apk\debug\app-debug.apk" $ApkPath -Force
+
+    $ApkSource = if ($IsRelease) {
+        "app\build\outputs\apk\release\app-release-unsigned.apk"
+    } else {
+        "app\build\outputs\apk\debug\app-debug.apk"
+    }
+    $ApkPath = Join-Path $AppDir "PicoClaw-android-$ApkBuildType.apk"
+    Copy-Item $ApkSource $ApkPath -Force
     
     Write-Success "Build Complete!"
     Write-Host "APK: $ApkPath" -ForegroundColor Green
     Write-Host "Size: $([math]::Round((Get-Item $ApkPath).Length/1MB,2)) MB" -ForegroundColor Green
     Write-Host "Install: adb install -r $ApkPath" -ForegroundColor Yellow
+
+    Set-Location $AppDir
 }
 
 if ($Platform -eq "ios" -or $Platform -eq "both") {
     Write-Step "iOS build not implemented"
+    Set-Location $AppDir
 }

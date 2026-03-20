@@ -109,10 +109,36 @@ public class GoBackendService extends Service {
                 backendDir.mkdirs();
             }
 
+            // Create etc directory with resolv.conf for Go DNS resolution
+            // Go looks for /etc/resolv.conf relative to the current working directory
+            File etcInBackend = new File(backendDir, "etc");
+            if (!etcInBackend.exists()) {
+                etcInBackend.mkdirs();
+            }
+            File resolvConf = new File(etcInBackend, "resolv.conf");
+            try (FileOutputStream out = new FileOutputStream(resolvConf)) {
+                // Use Google public DNS servers
+                out.write("nameserver 8.8.8.8\nnameserver 8.8.4.4\n".getBytes());
+                Log.i(TAG, "Created resolv.conf at " + resolvConf.getAbsolutePath());
+            } catch (IOException e) {
+                Log.e(TAG, "Failed to create resolv.conf", e);
+            }
+
             // Extract config
             File configFile = new File(backendDir, CONFIG_NAME);
             if (!configFile.exists()) {
-                extractAsset(CONFIG_NAME, configFile);
+                try {
+                    extractAsset(CONFIG_NAME, configFile);
+                } catch (IOException e) {
+                    // No config in assets, create empty config file
+                    // Go backend will initialize it via onboard process
+                    Log.i(TAG, "No config.json in assets, creating empty config file");
+                    try (FileOutputStream out = new FileOutputStream(configFile)) {
+                        out.write("{}".getBytes());
+                    } catch (IOException e2) {
+                        Log.e(TAG, "Failed to create empty config file", e2);
+                    }
+                }
             }
 
             // Stop existing process if any
@@ -141,7 +167,7 @@ public class GoBackendService extends Service {
             pb.environment().put("PICOCLAW_CONFIG", configFile.getAbsolutePath());
             pb.environment().put("PICOCLAW_HOME", picoHome.getAbsolutePath());
             pb.environment().put("HOME", getFilesDir().getAbsolutePath());
-            pb.environment().put("GODEBUG", "netdns=go");  // Use pure Go DNS resolver for Android
+            pb.environment().put("GODEBUG", "netdns=go");
             pb.directory(backendDir);
             pb.redirectErrorStream(true);
 

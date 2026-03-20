@@ -29,7 +29,8 @@ echo [INFO] All services on: http://localhost:18800
 echo.
 
 REM Set environment variables
-set "PICOCLAW_CONFIG_PATH=%APP_DIR%\config.json"
+set "PICOCLAW_CONFIG=%APP_DIR%\config.json"
+set "PICOCLAW_HOME=%APP_DIR%"
 set "PICOCLAW_LOG_DIR=%APP_DIR%\logs"
 
 REM Ensure log directory exists
@@ -84,7 +85,7 @@ echo.
 
 REM Start backend from source in the backend directory
 cd /d "%BACKEND_DIR%"
-go run . %PICOCLAW_CONFIG_PATH% -console-logs
+go run . %PICOCLAW_CONFIG_PATH% -console
 
 REM Restore original directory after go run is done
 cd /d "%ORG_DIR%"
