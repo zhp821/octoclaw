@@ -76,11 +76,17 @@ if [ -z "$SKIPSYNC" ]; then
     echo "=== Merging Upstream Latest ==="
     git fetch upstream || echo "[WARNING] Failed to fetch upstream"
     
+    echo "[INFO] Stashing local changes..."
+    git stash push -u -q --include-untracked 2>/dev/null || echo "[INFO] No local changes to stash"
     git checkout main
-    if git merge upstream/main --no-edit; then
+    if git merge upstream/main --no-edit --quiet; then
         echo "[SUCCESS] Merged upstream latest"
+        echo "[INFO] Restoring local changes..."
+        git stash pop -q 2>/dev/null
     else
-        echo "[WARNING] Merge conflicts detected. Please resolve manually."
+        echo "[WARNING] Merge conflicts detected. Restoring local changes..."
+        git merge --abort
+        git stash pop -q 2>/dev/null
     fi
     echo ""
 fi

@@ -86,17 +86,20 @@ if not defined SKIPSYNC (
         echo [WARNING] Failed to fetch upstream
     ) else (
         echo [INFO] Stashing local changes...
-        git stash
+        git stash push -u -q --include-untracked 2>nul
+        if errorlevel 1 (
+            echo [INFO] No local changes to stash
+        )
         git checkout main
-        git merge upstream/main --no-edit
+        git merge upstream/main --no-edit --quiet
         if errorlevel 1 (
             echo [WARNING] Merge conflicts detected. Restoring local changes...
             git merge --abort
-            git stash pop
+            git stash pop -q 2>nul
         ) else (
             echo [SUCCESS] Merged upstream latest
             echo [INFO] Restoring local changes...
-            git stash pop
+            git stash pop -q 2>nul
         )
     )
     echo.
@@ -110,4 +113,3 @@ if defined SKIPSYNC (
     echo [INFO] Run with -SkipSync to skip upstream sync
 )
 echo.
-pause

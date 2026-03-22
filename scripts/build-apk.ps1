@@ -16,7 +16,8 @@
 param(
     [ValidateSet("android", "ios", "both")]
     [string]$Platform = "android",
-    [switch]$Sync
+    [switch]$Sync,
+    [switch]$aab
 )
 
 $IsRelease = $args.Count -gt 0
@@ -104,7 +105,8 @@ Set-Location $BackendDir
 $env:GOOS = "android"
 $env:GOARCH = "arm64"
 $env:CGO_ENABLED = "0"
-go build -tags android -ldflags="-s -w" -o "picoclaw-web" .
+$ldFlags = "-s -w -extldflags '-static'"
+go build -tags android -ldflags="$ldFlags" -trimpath -o "picoclaw-web" .
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 Write-Success "Go backend built"
@@ -120,6 +122,15 @@ $JniDir = Join-Path $AppDir "android\app\src\main\jniLibs\arm64-v8a"
 New-Item -ItemType Directory -Path $PublicDir -Force | Out-Null
 New-Item -ItemType Directory -Path $JniDir -Force | Out-Null
 
+# Copy provider config
+$ProviderConfigSource = Join-Path $FrontendDir "src\config\providers.json"
+$ProviderConfigTarget = Join-Path $AssetsDir "config\providers.json"
+if (Test-Path $ProviderConfigSource) {
+    New-Item -ItemType Directory -Path (Split-Path $ProviderConfigTarget) -Force | Out-Null
+    Copy-Item $ProviderConfigSource $ProviderConfigTarget -Force
+    Write-SubStep "Provider config copied"
+}
+
 # Copy frontend dist
 $DistDir = Join-Path $BackendDir "dist"
 Remove-Item "$PublicDir\*" -Recurse -Force -ErrorAction SilentlyContinue
@@ -130,28 +141,45 @@ Write-SubStep "Frontend assets copied"
 Copy-Item (Join-Path $BackendDir "picoclaw-web") (Join-Path $JniDir "libpicoclaw-web.so") -Force
 Write-SubStep "Binary copied"
 
-# Step 5: Build APK
+# Step 5: Build APK/AAB
 if ($Platform -eq "android" -or $Platform -eq "both") {
-    Write-Step "Step 5: Building APK"
-    $AndroidDir = Join-Path $AppDir "android"
-    Set-Location $AndroidDir
-    
-    $ApkBuildType = if ($IsRelease) { "release" } else { "debug" }
-    ./gradlew clean assemble$ApkBuildType
-    if ($LASTEXITCODE -ne 0) { exit 1 }
-
-    $ApkSource = if ($IsRelease) {
-        "app\build\outputs\apk\release\app-release-unsigned.apk"
+    if ($aab) {
+        Write-Step "Step 5: Building AAB"
+        $AndroidDir = Join-Path $AppDir "android"
+        Set-Location $AndroidDir
+        
+        ./gradlew clean bundleRelease
+        if ($LASTEXITCODE -ne 0) { exit 1 }
+        
+        $AabSource = "app\build\outputs\bundle\release\app-release.aab"
+        $AabPath = Join-Path $AppDir "PicoClaw-android-release.aab"
+        Copy-Item $AabSource $AabPath -Force
+        
+        Write-Success "AAB Build Complete!"
+        Write-Host "AAB: $AabPath" -ForegroundColor Green
+        Write-Host "Size: $([math]::Round((Get-Item $AabPath).Length/1MB,2)) MB" -ForegroundColor Green
     } else {
-        "app\build\outputs\apk\debug\app-debug.apk"
+        Write-Step "Step 5: Building APK"
+        $AndroidDir = Join-Path $AppDir "android"
+        Set-Location $AndroidDir
+        
+        $ApkBuildType = if ($IsRelease) { "release" } else { "debug" }
+        ./gradlew clean assemble$ApkBuildType
+        if ($LASTEXITCODE -ne 0) { exit 1 }
+
+        $ApkSource = if ($IsRelease) {
+            "app\build\outputs\apk\release\app-release-unsigned.apk"
+        } else {
+            "app\build\outputs\apk\debug\app-debug.apk"
+        }
+        $ApkPath = Join-Path $AppDir "PicoClaw-android-$ApkBuildType.apk"
+        Copy-Item $ApkSource $ApkPath -Force
+        
+        Write-Success "Build Complete!"
+        Write-Host "APK: $ApkPath" -ForegroundColor Green
+        Write-Host "Size: $([math]::Round((Get-Item $ApkPath).Length/1MB,2)) MB" -ForegroundColor Green
+        Write-Host "Install: adb install -r $ApkPath" -ForegroundColor Yellow
     }
-    $ApkPath = Join-Path $AppDir "PicoClaw-android-$ApkBuildType.apk"
-    Copy-Item $ApkSource $ApkPath -Force
-    
-    Write-Success "Build Complete!"
-    Write-Host "APK: $ApkPath" -ForegroundColor Green
-    Write-Host "Size: $([math]::Round((Get-Item $ApkPath).Length/1MB,2)) MB" -ForegroundColor Green
-    Write-Host "Install: adb install -r $ApkPath" -ForegroundColor Yellow
 
     Set-Location $AppDir
 }
