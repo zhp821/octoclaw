@@ -19,3 +19,7 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# PicoClaw App specific rules
+-keep class com.picoclaw.app.** { *; }
+-dontwarn okhttp3.**

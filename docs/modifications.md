@@ -153,3 +153,33 @@ if wasFirstModel {
 ## 参考文档
 - `docs/mobile-adaptation.md` - 移动端适配记录
 - `picoclaw/pkg/gateway/gateway.go` - Gateway 配置热重载实现
+
+---
+
+## 2026-03-20 Gateway 启动逻辑优化
+
+### 问题
+- `main.go` 和 `tray_android.go` 都有 Gateway 启动逻辑
+- 启动逻辑分散，维护困难
+
+### 优化方案
+
+**启动流程（优化后）：**
+1. GoBackendService 启动 Web 后端 (18800)
+2. main.go 启动后 1 秒调用 `TryAutoStartGateway()`
+3. `TryAutoStartGateway()` 统一处理 Gateway 启动
+4. `runTray()` 只负责信号处理和关闭
+
+**修改内容：**
+- `tray_android.go`: 移除 Gateway 启动逻辑
+  - 删除 config、gateway、api、utils 包导入
+  - 删除 Gateway 启动代码
+  - 保留日志信息和信号处理
+  - 添加注释说明 Gateway 由 TryAutoStartGateway() 启动
+
+**优势：**
+- 单一职责：Gateway 启动逻辑集中在 TryAutoStartGateway()
+- 完善的启动检查：健康检查、配置验证、PID 管理
+- 防重复：多重检查确保唯一实例
+- 无启动延迟：随 Web 后端同时启动
+

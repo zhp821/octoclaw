@@ -29,3 +29,9 @@ web/backend/test_*.go
 
 # Config
 config.json
+
+# Docs
+docs/
+
+# Executables
+*.exe
