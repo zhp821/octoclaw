@@ -70,7 +70,7 @@ if ($dev) {
     Set-Location $BackendDir
     $env:PICOCLAW_LOG_DIR = $env:PICOCLAW_HOME
     try {
-        go run . $env:PICOCLAW_CONFIG -console
+        go run . -console $env:PICOCLAW_CONFIG
     } finally {
         # Clean up Vite process on exit
         if (-not $viteProc.HasExited) {
@@ -123,7 +123,7 @@ if ($dev) {
     $originalDir = Get-Location
     try {
         Set-Location $BackendDir
-        go run . $env:PICOCLAW_CONFIG -console
+        go run . -console $env:PICOCLAW_CONFIG
     } catch {
         Write-Error "Backend failed: $_"
         exit 1
@@ -141,7 +141,7 @@ if ($dev) {
     $originalDir = Get-Location
     try {
         Set-Location $BackendDir
-        go run . $env:PICOCLAW_CONFIG -console
+        go run . -console $env:PICOCLAW_CONFIG
     } catch {
         Write-Error "Backend failed: $_"
         exit 1

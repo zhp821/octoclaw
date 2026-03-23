@@ -85,7 +85,7 @@ echo.
 
 REM Start backend from source in the backend directory
 cd /d "%BACKEND_DIR%"
-go run . %PICOCLAW_CONFIG_PATH% -console
+go run . -console %PICOCLAW_CONFIG_PATH%
 
 REM Restore original directory after go run is done
 cd /d "%ORG_DIR%"
