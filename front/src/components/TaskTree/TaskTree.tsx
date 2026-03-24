@@ -4,7 +4,7 @@ import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-
 import { CSS } from '@dnd-kit/utilities'
 import { useTaskStore } from '@/stores/taskStore'
 import { GripVertical, ChevronRight, ChevronDown, MessageCircle, Search, Plus } from 'lucide-react'
-import type { TaskNode } from '@/types'
+import type { TaskNode, TaskStatus } from '@/types'
 
 interface SortableTaskProps {
   task: TaskNode
@@ -27,7 +27,6 @@ function SortableTask({ task, depth, onCreateSubtask }: SortableTaskProps) {
 
   return (
     <div ref={setNodeRef} style={style} className="relative">
-      {/* 仅根任务显示拖拽手柄 */}
       <div
         className={`group flex items-center gap-2 p-2 rounded transition-colors ${
           depth === 0 ? 'cursor-default' : 'cursor-pointer'
@@ -53,14 +52,15 @@ function SortableTask({ task, depth, onCreateSubtask }: SortableTaskProps) {
         )}
         
         <span className="text-sm truncate flex-1 cursor-pointer" onClick={() => selectTask(task.id)}>
-          {task.numbering && <span className="text-dark-text-secondary mr-2">{task.numbering}</span>}
           {task.title}
         </span>
         
         <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
           task.status === 'done' ? 'bg-green-500' :
           task.status === 'in-progress' ? 'bg-blue-500' :
-          task.status === 'blocked' ? 'bg-red-500' : 'bg-gray-500'
+          task.status === 'blocked' ? 'bg-red-500' :
+          task.status === 'cancel' ? 'bg-gray-400' :
+          'bg-gray-500'
         }`} title={task.status} />
         
         {task.assignee && (
@@ -90,6 +90,7 @@ function SortableTask({ task, depth, onCreateSubtask }: SortableTaskProps) {
 export function TaskTree() {
   const { roots, startCreateTask, reorderRoots } = useTaskStore()
   const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState<TaskStatus | null>(null)
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
@@ -114,18 +115,27 @@ export function TaskTree() {
     startCreateTask(parentId)
   }
 
-  const filteredRoots = searchQuery.trim()
-    ? roots.filter(root => {
-        const query = searchQuery.toLowerCase()
-        return root.title.toLowerCase().includes(query) ||
-               root.description.toLowerCase().includes(query)
-      })
-    : roots
+  // 搜索和状态过滤
+  const filteredRoots = roots.filter(root => {
+    // 搜索过滤
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      if (!root.title.toLowerCase().includes(query) &&
+          !root.description.toLowerCase().includes(query)) {
+        return false
+      }
+    }
+    // 状态过滤
+    if (statusFilter && root.status !== statusFilter) {
+      return false
+    }
+    return true
+  })
 
   return (
     <div className="overflow-y-auto h-full flex flex-col">
       <div className="p-2 border-b border-dark-border flex-shrink-0">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 mb-2">
           <h2 className="text-sm font-bold text-dark-text-secondary uppercase whitespace-nowrap">任务树</h2>
           <div className="relative flex-1 min-w-0">
             <Search size={14} className="absolute left-1.5 top-1/2 -translate-y-1/2 text-dark-text-secondary" />
@@ -142,6 +152,74 @@ export function TaskTree() {
             className="p-1 text-brand-blue hover:bg-brand-blue/10 rounded flex-shrink-0"
           >
             <Plus size={16} />
+          </button>
+        </div>
+        {/* 状态过滤 */}
+        <div className="flex items-center gap-1 overflow-x-auto">
+          <button
+            onClick={() => setStatusFilter(null)}
+            className={`px-2 py-1 text-xs rounded whitespace-nowrap border flex items-center gap-1 ${
+              statusFilter === null
+                ? 'bg-brand-blue text-white border-brand-blue'
+                : 'bg-dark-secondary text-dark-text-secondary border-dark-border'
+            }`}
+          >
+            全部
+          </button>
+          <button
+            onClick={() => setStatusFilter(statusFilter === 'todo' ? null : 'todo')}
+            className={`px-2 py-1 text-xs rounded whitespace-nowrap border flex items-center gap-1 ${
+              statusFilter === 'todo'
+                ? 'bg-blue-500 text-white border-blue-500'
+                : 'bg-dark-secondary text-dark-text-secondary border-dark-border'
+            }`}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-500" />
+            待办
+          </button>
+          <button
+            onClick={() => setStatusFilter(statusFilter === 'in-progress' ? null : 'in-progress')}
+            className={`px-2 py-1 text-xs rounded whitespace-nowrap border flex items-center gap-1 ${
+              statusFilter === 'in-progress'
+                ? 'bg-blue-500 text-white border-blue-500'
+                : 'bg-dark-secondary text-dark-text-secondary border-dark-border'
+            }`}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+            进行中
+          </button>
+          <button
+            onClick={() => setStatusFilter(statusFilter === 'blocked' ? null : 'blocked')}
+            className={`px-2 py-1 text-xs rounded whitespace-nowrap border flex items-center gap-1 ${
+              statusFilter === 'blocked'
+                ? 'bg-red-500 text-white border-red-500'
+                : 'bg-dark-secondary text-dark-text-secondary border-dark-border'
+            }`}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+            阻塞
+          </button>
+          <button
+            onClick={() => setStatusFilter(statusFilter === 'done' ? null : 'done')}
+            className={`px-2 py-1 text-xs rounded whitespace-nowrap border flex items-center gap-1 ${
+              statusFilter === 'done'
+                ? 'bg-green-500 text-white border-green-500'
+                : 'bg-dark-secondary text-dark-text-secondary border-dark-border'
+            }`}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+            已完成
+          </button>
+          <button
+            onClick={() => setStatusFilter(statusFilter === 'cancel' ? null : 'cancel')}
+            className={`px-2 py-1 text-xs rounded whitespace-nowrap border flex items-center gap-1 ${
+              statusFilter === 'cancel'
+                ? 'bg-gray-500 text-white border-gray-500'
+                : 'bg-dark-secondary text-dark-text-secondary border-dark-border'
+            }`}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+            取消
           </button>
         </div>
       </div>

@@ -1,4 +1,4 @@
-export type TaskStatus = 'todo' | 'in-progress' | 'blocked' | 'done';
+export type TaskStatus = 'todo' | 'in-progress' | 'blocked' | 'done' | 'cancel';
 
 export type MessageRole = 'user' | 'assistant' | 'system';
 
