@@ -162,9 +162,9 @@ export function TaskTree() {
             >
               <span className="truncate flex items-center gap-1">
                 <span className={`flex-shrink-0 ${currentStatus.icon}`} />
-                <span className="text-dark-text-primary">{currentStatus.label}</span>
+                <span className="text-slate-900 dark:text-dark-text-primary">{currentStatus.label}</span>
               </span>
-              <ChevronDownIcon size={10} className={`flex-shrink-0 text-dark-text-primary transition-transform ${showStatusDropdown ? 'rotate-180' : ''}`} />
+              <ChevronDownIcon size={10} className={`flex-shrink-0 text-slate-900 dark:text-dark-text-primary transition-transform ${showStatusDropdown ? 'rotate-180' : ''}`} />
             </button>
             
             {showStatusDropdown && (
@@ -181,7 +181,7 @@ export function TaskTree() {
                     }`}
                   >
                     <span className={`flex-shrink-0 ${option.icon}`} />
-                    <span className="truncate text-dark-text-primary">{option.label}</span>
+                    <span className="truncate text-slate-900 dark:text-dark-text-primary">{option.label}</span>
                   </button>
                 ))}
               </div>
@@ -189,13 +189,13 @@ export function TaskTree() {
           </div>
           
           <div className="relative flex-1 min-w-0">
-            <Search size={14} className="absolute left-1.5 top-1/2 -translate-y-1/2 text-dark-text-secondary" />
+            <Search size={14} className="absolute left-1.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-dark-text-secondary" />
             <input
               type="text"
               placeholder="搜索..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-6 pr-2 py-1 text-xs bg-white dark:bg-dark-secondary border border-dark-border rounded focus:outline-none focus:ring-1 focus:ring-brand-blue text-dark-text-primary placeholder-dark-text-secondary"
+              className="w-full pl-6 pr-2 py-1 text-xs bg-white dark:bg-dark-secondary border border-dark-border rounded focus:outline-none focus:ring-1 focus:ring-brand-blue text-slate-900 dark:text-dark-text-primary placeholder-gray-400 dark:placeholder-dark-text-secondary"
             />
           </div>
           <button
