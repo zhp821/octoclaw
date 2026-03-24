@@ -17,6 +17,12 @@ export function handlePicoMessage(
 ): void {
   if (message.session_id !== expectedSessionId) {
     console.warn('Session ID mismatch', message.session_id, expectedSessionId)
+    useChatStore.getState().addMessage(expectedSessionId, {
+      id: `session-error-${Date.now()}`,
+      role: 'system',
+      content: 'Session error: Reconnecting...',
+      timestamp: formatTimestamp(),
+    })
     return
   }
 
