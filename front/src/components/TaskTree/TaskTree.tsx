@@ -157,24 +157,24 @@ export function TaskTree() {
   })
 
   return (
-    <div className="overflow-y-auto h-full flex flex-col">
+    <div className="overflow-y-auto h-full flex flex-col relative">
       <div className="p-2 border-b border-dark-border flex-shrink-0">
         <div className="flex items-center gap-2 mb-2">
           {/* 状态下拉框 */}
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setShowStatusDropdown(!showStatusDropdown)}
-              className="w-[80px] px-2 py-1 text-xs bg-dark-secondary border border-dark-border rounded text-dark-text-primary focus:outline-none focus:ring-1 focus:ring-brand-blue flex items-center justify-between gap-1"
+              className="w-[80px] px-1.5 py-1 text-[11px] bg-white dark:bg-dark-secondary border border-dark-border rounded text-dark-text-primary focus:outline-none focus:ring-1 focus:ring-brand-blue flex items-center justify-between gap-1"
             >
               <span className="truncate">
                 <span className={`inline-block w-1.5 h-1.5 rounded-full ${currentStatus.color} mr-1`} />
                 {currentStatus.label}
               </span>
-              <ChevronDownIcon size={12} className={`flex-shrink-0 transition-transform ${showStatusDropdown ? 'rotate-180' : ''}`} />
+              <ChevronDownIcon size={10} className={`flex-shrink-0 transition-transform ${showStatusDropdown ? 'rotate-180' : ''}`} />
             </button>
             
             {showStatusDropdown && (
-              <div className="absolute top-full left-0 mt-1 bg-dark-secondary border border-dark-border rounded shadow-lg z-50 min-w-[100px]">
+              <div className="absolute top-full left-0 mt-0.5 bg-white dark:bg-dark-secondary border border-dark-border rounded shadow-xl z-[100] min-w-[100px] overflow-hidden">
                 {statusOptions.map(option => (
                   <button
                     key={option.value || 'all'}
@@ -182,8 +182,8 @@ export function TaskTree() {
                       setStatusFilter(option.value)
                       setShowStatusDropdown(false)
                     }}
-                    className={`w-full px-3 py-1.5 text-xs text-left hover:bg-dark-border flex items-center gap-2 ${
-                      statusFilter === option.value ? 'bg-dark-border' : ''
+                    className={`w-full px-2.5 py-1 text-[11px] text-left hover:bg-gray-100 dark:hover:bg-dark-border flex items-center gap-2 ${
+                      statusFilter === option.value ? 'bg-gray-100 dark:bg-dark-border' : ''
                     }`}
                   >
                     <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${option.color}`} />
