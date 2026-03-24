@@ -1,6 +1,6 @@
 import type { TaskNode, Agent, ProjectData, TaskStatus, QualityGate } from '@/types'
+import { STATUS_CONFIG, getRandomStatus } from '@/config/status'
 
-const STATUSES: TaskStatus[] = ['todo', 'in-progress', 'blocked', 'done']
 const TITLE_PREFIX = ['Design', 'Develop', 'Test', 'Deploy', 'Research', 'Plan']
 
 export const AGENTS: Agent[] = [
@@ -61,7 +61,7 @@ function generateTask(
     parentId,
     title: `${getRandomItem(TITLE_PREFIX)} Task ${numbering || 'Root'}`,
     description: `## Description for Task ${numbering || 'Root'}\n\nThis is a detailed description.\n\n- Step 1\n- Step 2\n- Step 3`,
-    status: getRandomItem(STATUSES),
+    status: getRandomStatus(),
     level,
     numbering,
     dependencies,

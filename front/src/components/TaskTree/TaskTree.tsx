@@ -5,6 +5,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { useTaskStore } from '@/stores/taskStore'
 import { GripVertical, ChevronRight, ChevronDown, MessageCircle, Search, Plus, ChevronDown as ChevronDownIcon } from 'lucide-react'
 import type { TaskNode, TaskStatus } from '@/types'
+import { STATUS_CONFIG } from '@/config/status'
 
 interface SortableTaskProps {
   task: TaskNode
@@ -105,16 +106,7 @@ export function TaskTree() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const statusOptions: { value: TaskStatus | null; label: string; color: string }[] = [
-    { value: null, label: '全部状态', color: 'bg-gray-400' },
-    { value: 'todo', label: '待办', color: 'bg-gray-400' },
-    { value: 'in-progress', label: '进行中', color: 'bg-blue-500' },
-    { value: 'blocked', label: '阻塞', color: 'bg-red-500' },
-    { value: 'done', label: '已完成', color: 'bg-green-500' },
-    { value: 'cancel', label: '取消', color: 'bg-black/50' },
-  ]
-
-  const currentStatus = statusOptions.find(s => s.value === statusFilter) || statusOptions[0]
+  const currentStatus = STATUS_CONFIG.find(s => s.value === statusFilter) || STATUS_CONFIG[0]
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
@@ -175,7 +167,7 @@ export function TaskTree() {
             
             {showStatusDropdown && (
               <div className="absolute top-full left-0 mt-0.5 bg-white dark:bg-dark-secondary border border-dark-border rounded shadow-xl z-[100] min-w-[100px] overflow-hidden">
-                {statusOptions.map(option => (
+                {STATUS_CONFIG.map(option => (
                   <button
                     key={option.value || 'all'}
                     onClick={() => {

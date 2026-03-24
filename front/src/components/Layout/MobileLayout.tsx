@@ -6,6 +6,7 @@ import { NewTaskForm } from '@/components/TaskDetail/NewTaskForm'
 import { useTaskStore } from '@/stores/taskStore'
 import { ChevronLeft, MessageCircle, Plus, X } from 'lucide-react'
 import type { TaskNode, TaskStatus } from '@/types'
+import { STATUS_CONFIG } from '@/config/status'
 
 export function MobileLayout() {
   const [view, setView] = useState<'list' | 'detail' | 'chat'>('list')
@@ -189,61 +190,24 @@ export function MobileLayout() {
               </div>
               {/* 状态过滤 - 缩小版 */}
               <div className="flex items-center gap-0.5 ml-1 overflow-x-auto">
-                <button
-                  onClick={() => setStatusFilter(statusFilter === 'todo' ? null : 'todo')}
-                  className={`px-1.5 py-0.5 text-[10px] rounded whitespace-nowrap flex items-center gap-0.5 ${
-                    statusFilter === 'todo'
-                      ? 'text-blue-500 font-medium'
-                      : 'text-dark-text-secondary'
-                  }`}
-                >
-                  <span className={`w-1 h-1 rounded-full ${statusFilter === 'todo' ? 'bg-blue-500' : 'bg-gray-400'}`} />
-                  待办
-                </button>
-                <button
-                  onClick={() => setStatusFilter(statusFilter === 'in-progress' ? null : 'in-progress')}
-                  className={`px-1.5 py-0.5 text-[10px] rounded whitespace-nowrap flex items-center gap-0.5 ${
-                    statusFilter === 'in-progress'
-                      ? 'text-blue-500 font-medium'
-                      : 'text-dark-text-secondary'
-                  }`}
-                >
-                  <span className={`w-1 h-1 rounded-full ${statusFilter === 'in-progress' ? 'bg-blue-500' : 'bg-blue-500'}`} />
-                  进行中
-                </button>
-                <button
-                  onClick={() => setStatusFilter(statusFilter === 'blocked' ? null : 'blocked')}
-                  className={`px-1.5 py-0.5 text-[10px] rounded whitespace-nowrap flex items-center gap-0.5 ${
-                    statusFilter === 'blocked'
-                      ? 'text-red-500 font-medium'
-                      : 'text-dark-text-secondary'
-                  }`}
-                >
-                  <span className={`w-1 h-1 rounded-full ${statusFilter === 'blocked' ? 'bg-red-500' : 'bg-red-500'}`} />
-                  阻塞
-                </button>
-                <button
-                  onClick={() => setStatusFilter(statusFilter === 'done' ? null : 'done')}
-                  className={`px-1.5 py-0.5 text-[10px] rounded whitespace-nowrap flex items-center gap-0.5 ${
-                    statusFilter === 'done'
-                      ? 'text-green-500 font-medium'
-                      : 'text-dark-text-secondary'
-                  }`}
-                >
-                  <span className={`w-1 h-1 rounded-full ${statusFilter === 'done' ? 'bg-green-500' : 'bg-green-500'}`} />
-                  已完成
-                </button>
-                <button
-                  onClick={() => setStatusFilter(statusFilter === 'cancel' ? null : 'cancel')}
-                  className={`px-1.5 py-0.5 text-[10px] rounded whitespace-nowrap flex items-center gap-0.5 ${
-                    statusFilter === 'cancel'
-                      ? 'text-gray-700 font-medium'
-                      : 'text-dark-text-secondary'
-                  }`}
-                >
-                  <span className={`w-1 h-1 rounded-full ${statusFilter === 'cancel' ? 'bg-black/60' : 'bg-gray-400'}`} />
-                  取消
-                </button>
+                {STATUS_CONFIG.filter(s => s.value !== null).map(option => (
+                  <button
+                    key={option.value}
+                    onClick={() => setStatusFilter(statusFilter === option.value ? null : option.value)}
+                    className={`px-1.5 py-0.5 text-[10px] rounded whitespace-nowrap flex items-center gap-0.5 ${
+                      statusFilter === option.value
+                        ? 'font-medium ' + (option.value === 'todo' ? 'text-gray-600' :
+                           option.value === 'in-progress' ? 'text-blue-500' :
+                           option.value === 'blocked' ? 'text-red-500' :
+                           option.value === 'done' ? 'text-green-500' :
+                           'text-black')
+                        : 'text-dark-text-secondary'
+                    }`}
+                  >
+                    <span className={`w-1 h-1 rounded-full flex-shrink-0 ${option.color}`} />
+                    {option.label}
+                  </button>
+                ))}
               </div>
             </>
           )}
