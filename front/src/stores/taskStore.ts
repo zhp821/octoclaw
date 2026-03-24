@@ -10,6 +10,7 @@ interface TaskState {
   isLoading: boolean
   isCreatingTask: boolean
   creatingParentId: string | null
+  searchQuery: string
 
   fetchTasks: () => Promise<void>
   selectTask: (id: string) => void
@@ -45,6 +46,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   isLoading: false,
   isCreatingTask: false,
   creatingParentId: null,
+  searchQuery: '',
 
   fetchTasks: async () => {
     set({ isLoading: true })
