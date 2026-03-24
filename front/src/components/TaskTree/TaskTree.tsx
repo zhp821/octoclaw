@@ -157,16 +157,6 @@ export function TaskTree() {
         {/* 状态过滤 */}
         <div className="flex items-center gap-1 overflow-x-auto">
           <button
-            onClick={() => setStatusFilter(null)}
-            className={`px-2 py-1 text-xs rounded whitespace-nowrap border flex items-center gap-1 ${
-              statusFilter === null
-                ? 'bg-brand-blue text-white border-brand-blue'
-                : 'bg-dark-secondary text-dark-text-secondary border-dark-border'
-            }`}
-          >
-            全部
-          </button>
-          <button
             onClick={() => setStatusFilter(statusFilter === 'todo' ? null : 'todo')}
             className={`px-2 py-1 text-xs rounded whitespace-nowrap border flex items-center gap-1 ${
               statusFilter === 'todo'

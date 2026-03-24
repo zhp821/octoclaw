@@ -190,16 +190,6 @@ export function MobileLayout() {
               {/* 状态过滤 - 缩小版 */}
               <div className="flex items-center gap-0.5 ml-1 overflow-x-auto">
                 <button
-                  onClick={() => setStatusFilter(null)}
-                  className={`px-1.5 py-0.5 text-[10px] rounded whitespace-nowrap flex items-center gap-0.5 ${
-                    statusFilter === null
-                      ? 'text-brand-blue font-medium'
-                      : 'text-dark-text-secondary'
-                  }`}
-                >
-                  全部
-                </button>
-                <button
                   onClick={() => setStatusFilter(statusFilter === 'todo' ? null : 'todo')}
                   className={`px-1.5 py-0.5 text-[10px] rounded whitespace-nowrap flex items-center gap-0.5 ${
                     statusFilter === 'todo'
