@@ -1,3 +1,5 @@
+export type { Timestamp } from '@/utils/timestamp'
+
 export type TaskStatus = 'todo' | 'in-progress' | 'blocked' | 'done' | 'cancel';
 
 export type MessageRole = 'user' | 'assistant' | 'system';
@@ -29,9 +31,10 @@ export interface ChatMessage {
   id: string;
   role: MessageRole;
   content: string;
-  timestamp: number;
+  timestamp: Timestamp;
   relatedAction?: 'decompose' | 'modify' | 'create';
   pendingChanges?: TaskChanges;
+  metadata?: Record<string, unknown>;
 }
 
 export interface TaskNode {
@@ -49,7 +52,10 @@ export interface TaskNode {
   steps: string[];
   chatHistory: ChatMessage[];
   isDecomposing?: boolean;
-  requiresReview: boolean; // 是否需要人工审核
+  requiresReview: boolean;
+  executionSessionId?: string;
+  executionAgentId?: string;
+  executionMessages?: ChatMessage[];
 }
 
 export interface ProjectData {
