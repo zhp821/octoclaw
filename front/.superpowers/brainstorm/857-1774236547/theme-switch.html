@@ -1,0 +1,204 @@
+<h2>主题切换方案</h2>
+<p class="subtitle">深色/浅色双主题，支持一键切换</p>
+
+<div class="section">
+  <h3>主题切换交互</h3>
+  <div class="split">
+    <div class="mockup">
+      <div class="mockup-header">深色主题预览</div>
+      <div class="mockup-body" style="background: #0f172a; padding: 12px;">
+        <!-- 顶部导航栏 -->
+        <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid #334155; margin-bottom: 8px;">
+          <div style="font-size: 10px; font-weight: bold; color: #e2e8f0;">WBS 任务系统</div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <div style="font-size: 7px; color: #888;">🌙 深色</div>
+            <div style="width: 40px; height: 20px; background: #3b82f6; border-radius: 10px; position: relative; cursor: pointer;">
+              <div style="position: absolute; right: 2px; top: 2px; width: 16px; height: 16px; background: white; border-radius: 50%;"></div>
+            </div>
+            <div style="font-size: 7px; color: #888;">☀️ 浅色</div>
+          </div>
+        </div>
+        
+        <!-- 任务卡片 -->
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;">
+          <div style="background: #1e293b; padding: 10px; border-radius: 6px; border-left: 3px solid #3b82f6;">
+            <div style="font-size: 7px; color: #3b82f6;">1.1</div>
+            <div style="font-size: 9px; font-weight: bold; color: #e2e8f0;">子任务 A</div>
+            <div style="margin-top: 4px;">
+              <span style="background: #3b82f622; color: #60a5fa; padding: 2px 4px; border-radius: 2px; font-size: 6px;">🔄 进行中</span>
+            </div>
+          </div>
+          <div style="background: #1e293b; padding: 10px; border-radius: 6px; border-left: 3px solid #22c55e;">
+            <div style="font-size: 7px; color: #22c55e;">1.2</div>
+            <div style="font-size: 9px; font-weight: bold; color: #e2e8f0;">子任务 B</div>
+            <div style="margin-top: 4px;">
+              <span style="background: #22c55e22; color: #4ade80; padding: 2px 4px; border-radius: 2px; font-size: 6px;">✅ 已完成</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 聊天气泡 -->
+        <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; gap: 4px;">
+            <div style="width: 20px; height: 20px; background: #3b82f6; border-radius: 50%;"></div>
+            <div style="background: #1e293b; padding: 4px 8px; border-radius: 6px; font-size: 6px; color: #e2e8f0;">用户消息</div>
+          </div>
+          <div style="display: flex; gap: 4px; flex-direction: row-reverse;">
+            <div style="width: 20px; height: 20px; background: #8b5cf6; border-radius: 50%;"></div>
+            <div style="background: #8b5cf622; border: 1px solid #8b5cf644; padding: 4px 8px; border-radius: 6px; font-size: 6px; color: #e2e8f0;">AI 回复</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mockup">
+      <div class="mockup-header">浅色主题预览</div>
+      <div class="mockup-body" style="background: #ffffff; padding: 12px;">
+        <!-- 顶部导航栏 -->
+        <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0; margin-bottom: 8px;">
+          <div style="font-size: 10px; font-weight: bold; color: #1e293b;">WBS 任务系统</div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <div style="font-size: 7px; color: #64748b;">🌙 深色</div>
+            <div style="width: 40px; height: 20px; background: #cbd5e1; border-radius: 10px; position: relative; cursor: pointer;">
+              <div style="position: absolute; left: 2px; top: 2px; width: 16px; height: 16px; background: white; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2);"></div>
+            </div>
+            <div style="font-size: 7px; color: #64748b;">☀️ 浅色</div>
+          </div>
+        </div>
+        
+        <!-- 任务卡片 -->
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;">
+          <div style="background: #f8fafc; padding: 10px; border-radius: 6px; border-left: 3px solid #2563eb; box-shadow: 0 1px 3px rgba(37,99,235,0.1);">
+            <div style="font-size: 7px; color: #2563eb;">1.1</div>
+            <div style="font-size: 9px; font-weight: bold; color: #1e293b;">子任务 A</div>
+            <div style="margin-top: 4px;">
+              <span style="background: #dbeafe; color: #1d4ed8; padding: 2px 4px; border-radius: 2px; font-size: 6px;">🔄 进行中</span>
+            </div>
+          </div>
+          <div style="background: #f8fafc; padding: 10px; border-radius: 6px; border-left: 3px solid #16a34a; box-shadow: 0 1px 3px rgba(22,163,74,0.1);">
+            <div style="font-size: 7px; color: #16a34a;">1.2</div>
+            <div style="font-size: 9px; font-weight: bold; color: #1e293b;">子任务 B</div>
+            <div style="margin-top: 4px;">
+              <span style="background: #dcfce7; color: #15803d; padding: 2px 4px; border-radius: 2px; font-size: 6px;">✅ 已完成</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 聊天气泡 -->
+        <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; gap: 4px;">
+            <div style="width: 20px; height: 20px; background: #2563eb; border-radius: 50%;"></div>
+            <div style="background: #f1f5f9; padding: 4px 8px; border-radius: 6px; font-size: 6px; color: #1e293b;">用户消息</div>
+          </div>
+          <div style="display: flex; gap: 4px; flex-direction: row-reverse;">
+            <div style="width: 20px; height: 20px; background: #7c3aed; border-radius: 50%;"></div>
+            <div style="background: #f3e8ff; border: 1px solid #e9d5ff; padding: 4px 8px; border-radius: 6px; font-size: 6px; color: #1e293b;">AI 回复</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 16px;">
+  <h3>主题色值对照表</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="padding: 12px;">
+      <table style="width: 100%; font-size: 7px; border-collapse: collapse;">
+        <tr style="border-bottom: 1px solid #444;">
+          <th style="text-align: left; padding: 6px; color: #888;">元素</th>
+          <th style="text-align: left; padding: 6px; color: #3b82f6;">深色主题</th>
+          <th style="text-align: left; padding: 6px; color: #2563eb;">浅色主题</th>
+        </tr>
+        <tr style="border-bottom: 1px solid #333;">
+          <td style="padding: 6px;">背景主色</td>
+          <td style="padding: 6px; font-family: monospace;">#0f172a</td>
+          <td style="padding: 6px; font-family: monospace;">#ffffff</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #333;">
+          <td style="padding: 6px;">背景次要</td>
+          <td style="padding: 6px; font-family: monospace;">#1e293b</td>
+          <td style="padding: 6px; font-family: monospace;">#f8fafc</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #333;">
+          <td style="padding: 6px;">边框颜色</td>
+          <td style="padding: 6px; font-family: monospace;">#334155</td>
+          <td style="padding: 6px; font-family: monospace;">#e2e8f0</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #333;">
+          <td style="padding: 6px;">文字主色</td>
+          <td style="padding: 6px; font-family: monospace;">#e2e8f0</td>
+          <td style="padding: 6px; font-family: monospace;">#1e293b</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #333;">
+          <td style="padding: 6px;">文字次要</td>
+          <td style="padding: 6px; font-family: monospace;">#94a3b8</td>
+          <td style="padding: 6px; font-family: monospace;">#64748b</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #333;">
+          <td style="padding: 6px;">主色 (蓝)</td>
+          <td style="padding: 6px; font-family: monospace;">#3b82f6</td>
+          <td style="padding: 6px; font-family: monospace;">#2563eb</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #333;">
+          <td style="padding: 6px;">强调色 (紫)</td>
+          <td style="padding: 6px; font-family: monospace;">#8b5cf6</td>
+          <td style="padding: 6px; font-family: monospace;">#7c3aed</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 16px;">
+  <h3>切换设置入口</h3>
+  <div class="split">
+    <div class="mockup">
+      <div class="mockup-header">设置面板</div>
+      <div class="mockup-body" style="padding: 12px; background: #0f172a;">
+        <div style="background: #1e293b; padding: 12px; border-radius: 8px;">
+          <div style="font-size: 9px; font-weight: bold; color: #e2e8f0; margin-bottom: 8px;">⚙️ 外观设置</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #334155;">
+            <div>
+              <div style="font-size: 8px; color: #e2e8f0;">深色模式</div>
+              <div style="font-size: 6px; color: #888;">切换深色/浅色主题</div>
+            </div>
+            <div style="width: 44px; height: 24px; background: #3b82f6; border-radius: 12px; position: relative;">
+              <div style="position: absolute; right: 2px; top: 2px; width: 20px; height: 20px; background: white; border-radius: 50%;"></div>
+            </div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0;">
+            <div>
+              <div style="font-size: 8px; color: #e2e8f0;">跟随系统</div>
+              <div style="font-size: 6px; color: #888;">自动匹配系统主题</div>
+            </div>
+            <div style="width: 44px; height: 24px; background: #334155; border-radius: 12px; position: relative;">
+              <div style="position: absolute; left: 2px; top: 2px; width: 20px; height: 20px; background: white; border-radius: 50%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mockup">
+      <div class="mockup-header">快捷入口</div>
+      <div class="mockup-body" style="padding: 12px; background: #0f172a;">
+        <div style="text-align: center; padding: 20px; color: #888; font-size: 7px;">
+          <div style="font-size: 24px; margin-bottom: 8px;">🌙 / ☀️</div>
+          <div>顶部导航栏右侧快捷切换</div>
+          <div style="margin-top: 4px;">或 设置面板中切换</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="options" style="margin-top: 16px;">
+  <div class="option" data-choice="dual-theme-confirmed" onclick="toggleSelect(this)">
+    <div class="letter">✓</div>
+    <div class="content">
+      <h3>确认双主题方案</h3>
+      <p>深色/浅色双主题，顶部导航栏快捷切换 + 设置面板，自动记忆用户偏好</p>
+    </div>
+  </div>
+</div>

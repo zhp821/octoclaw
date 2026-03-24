@@ -1,0 +1,105 @@
+<h2>设计规范总览</h2>
+<p class="subtitle">确认所有设计决策</p>
+
+<div class="mockup">
+  <div class="mockup-body" style="padding: 16px; background: #0f172a;">
+    <h3 style="color: #e2e8f0; margin-bottom: 16px;">✅ 已确认的设计要素</h3>
+    
+    <div style="display: grid; gap: 12px;">
+      <!-- 布局 -->
+      <div style="background: #1e293b; padding: 12px; border-radius: 6px; border-left: 3px solid #3b82f6;">
+        <div style="font-size: 8px; color: #3b82f6; font-weight: bold; margin-bottom: 4px;">📐 布局结构</div>
+        <div style="font-size: 7px; color: #e2e8f0; line-height: 1.6;">
+          <strong>桌面端：</strong>三栏布局 — 左 (任务树 25%) / 中 (详情 45%) / 右 (AI 聊天 30%)<br>
+          <strong>移动端：</strong>根任务网格 → 点击全屏推开 → 面包屑导航 + 子任务列表
+        </div>
+      </div>
+      
+      <!-- 聊天交互 -->
+      <div style="background: #1e293b; padding: 12px; border-radius: 6px; border-left: 3px solid #8b5cf6;">
+        <div style="font-size: 8px; color: #8b5cf6; font-weight: bold; margin-bottom: 4px;">💬 AI 聊天</div>
+        <div style="font-size: 7px; color: #e2e8f0; line-height: 1.6;">
+          <strong>上下文绑定：</strong>支持针对根任务或任意子任务聊天<br>
+          <strong>移动端：</strong>底部抽屉半屏 → 上滑全屏<br>
+          <strong>智能修改：</strong>AI 可修改任务任意元素 (标题/描述/步骤/负责人/质量门/依赖/状态)<br>
+          <strong>修改预览：</strong>红绿对比显示删除/新增，用户确认后应用
+        </div>
+      </div>
+      
+      <!-- 任务功能 -->
+      <div style="background: #1e293b; padding: 12px; border-radius: 6px; border-left: 3px solid #22c55e;">
+        <div style="font-size: 8px; color: #22c55e; font-weight: bold; margin-bottom: 4px;">📋 任务功能</div>
+        <div style="font-size: 7px; color: #e2e8f0; line-height: 1.6;">
+          <strong>编号规则：</strong>根任务无编号，子任务 1,2,3 → 1.1,1.2 → 1.1.1,1.1.2<br>
+          <strong>依赖关系：</strong>仅允许依赖同级或直接父级，禁止跨层跨分支<br>
+          <strong>拖拽排序：</strong>支持子任务拖拽重排，自动重算编号<br>
+          <strong>状态管理：</strong>待办 / 进行中 / 阻塞 / 已完成<br>
+          <strong>质量门：</strong>可配置 JSON Schema 验证
+        </div>
+      </div>
+      
+      <!-- 移动端手势 -->
+      <div style="background: #1e293b; padding: 12px; border-radius: 6px; border-left: 3px solid #f59e0b;">
+        <div style="font-size: 8px; color: #f59e0b; font-weight: bold; margin-bottom: 4px;">👆 移动端手势</div>
+        <div style="font-size: 7px; color: #e2e8f0; line-height: 1.6;">
+          <strong>点击：</strong>进入下一级任务列表<br>
+          <strong>左滑：</strong>删除/阻塞操作<br>
+          <strong>右滑：</strong>查看详情<br>
+          <strong>长按：</strong>AI 分解菜单<br>
+          <strong>抽屉上滑：</strong>半屏聊天 → 全屏聊天
+        </div>
+      </div>
+      
+      <!-- 视觉风格 -->
+      <div style="background: #1e293b; padding: 12px; border-radius: 6px; border-left: 3px solid #3b82f6;">
+        <div style="font-size: 8px; color: #3b82f6; font-weight: bold; margin-bottom: 4px;">🎨 视觉风格</div>
+        <div style="font-size: 7px; color: #e2e8f0; line-height: 1.6;">
+          <strong>双主题：</strong>深色 (深空灰 + 电光蓝) / 浅色 (纯白 + 科技蓝)，支持一键切换<br>
+          <strong>组件：</strong>渐变顶边、左侧高亮、发光阴影<br>
+          <strong>字体：</strong>系统字体 + JetBrains Mono 代码字体<br>
+          <strong>图标：</strong>Lucide 图标库
+        </div>
+      </div>
+      
+      <!-- 技术架构 -->
+      <div style="background: #1e293b; padding: 12px; border-radius: 6px; border-left: 3px solid #22c55e;">
+        <div style="font-size: 8px; color: #22c55e; font-weight: bold; margin-bottom: 4px;">⚛️ 技术栈</div>
+        <div style="font-size: 7px; color: #e2e8f0; line-height: 1.6;">
+          <strong>框架：</strong>React 18 + Vite<br>
+          <strong>状态管理：</strong>Zustand / Redux Toolkit<br>
+          <strong>样式：</strong>Tailwind CSS + CSS Variables<br>
+          <strong>Markdown：</strong>react-markdown + TipTap<br>
+          <strong>拖拽：</strong>dnd-kit / react-beautiful-dnd<br>
+          <strong>Mock 数据：</strong>30 个根任务，深度 4 层，MSW 拦截
+        </div>
+      </div>
+    </div>
+    
+    <div style="margin-top: 16px; padding: 12px; background: #8b5cf622; border: 1px solid #8b5cf644; border-radius: 6px;">
+      <div style="font-size: 8px; color: #8b5cf6; font-weight: bold; margin-bottom: 4px;">📄 下一步</div>
+      <div style="font-size: 7px; color: #e2e8f0;">
+        确认以上设计规范后，我将：<br>
+        1. 保存设计规范文档到 <code>docs/superpowers/specs/YYYY-MM-DD-wbs-task-system-design.md</code><br>
+        2. 调用 writing-plans 技能生成详细开发计划<br>
+        3. 计划包含：项目初始化、组件开发、状态管理、Mock 数据、测试等任务
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="options" style="margin-top: 16px;">
+  <div class="option" data-choice="spec-approved" onclick="toggleSelect(this)">
+    <div class="letter">✓</div>
+    <div class="content">
+      <h3>批准设计规范</h3>
+      <p>确认所有设计要素，开始编写规范文档和开发计划</p>
+    </div>
+  </div>
+  <div class="option" data-choice="spec-changes" onclick="toggleSelect(this)">
+    <div class="letter">✏️</div>
+    <div class="content">
+      <h3>需要修改</h3>
+      <p>在终端中说明需要调整的地方</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,238 @@
+<h2>聊天上下文 + AI 智能修改</h2>
+<p class="subtitle">支持针对任意层级任务聊天，AI 可修改任务任意元素</p>
+
+<div class="section">
+  <h3>聊天上下文切换</h3>
+  <div class="split">
+    <div class="mockup">
+      <div class="mockup-header">场景 1: 针对根任务聊天</div>
+      <div class="mockup-body" style="display: flex; flex-direction: column; gap: 4px; padding: 8px; height: 260px;">
+        <!-- 根任务列表，选中状态 -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;">
+          <div style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); padding: 12px 4px; border-radius: 4px; text-align: center; font-size: 8px; font-weight: bold; border: 2px solid #8b5cf6;">
+            根任务 1<br><span style="font-size: 6px; opacity: 0.8;">💬 对话中</span>
+          </div>
+          <div style="background: #222; padding: 12px 4px; border-radius: 4px; text-align: center; font-size: 8px;">根任务 2</div>
+          <div style="background: #222; padding: 12px 4px; border-radius: 4px; text-align: center; font-size: 8px;">根任务 3</div>
+        </div>
+        
+        <!-- 聊天抽屉 -->
+        <div style="margin-top: 8px; background: #1e293b; border-radius: 8px; padding: 10px; flex: 1; display: flex; flex-direction: column;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="font-size: 8px; font-weight: bold; color: #8b5cf6;">
+              💬 AI · <span style="color: #3b82f6;">根任务 1</span>
+            </div>
+            <div style="font-size: 6px; color: #888; background: #334155; padding: 2px 4px; border-radius: 2px;">📌 根层级</div>
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 4px; overflow-y: auto;">
+            <div style="display: flex; gap: 4px;">
+              <div style="width: 18px; height: 18px; background: #3b82f6; border-radius: 50%;"></div>
+              <div style="background: #334155; padding: 4px 6px; border-radius: 6px; font-size: 6px; line-height: 1.3;">
+                帮我规划一个电商后台管理系统
+              </div>
+            </div>
+            <div style="display: flex; gap: 4px; flex-direction: row-reverse;">
+              <div style="width: 18px; height: 18px; background: #8b5cf6; border-radius: 50%;"></div>
+              <div style="background: #8b5cf622; border: 1px solid #8b5cf6; padding: 4px 6px; border-radius: 6px; font-size: 6px; line-height: 1.3;">
+                已创建根任务「电商后台管理系统」，并分解为 5 个一级子任务
+                <div style="margin-top: 4px; display: flex; gap: 4px;">
+                  <button style="background: #8b5cf6; border: none; padding: 2px 4px; border-radius: 2px; font-size: 5px; color: white;">✓ 查看子任务</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mockup">
+      <div class="mockup-header">场景 2: 针对子任务聊天</div>
+      <div class="mockup-body" style="display: flex; flex-direction: column; gap: 4px; padding: 8px; height: 260px;">
+        <!-- 面包屑 + 任务列表 -->
+        <div style="background: #1a1a2e; padding: 6px; border-radius: 4px; font-size: 6px; color: #888;">
+          📍 根任务 1 &gt; 1.2 &gt; <span style="color: #3b82f6; font-weight: bold;">1.2.1 (当前)</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div style="background: #3b82f622; border: 1px solid #3b82f6; padding: 8px; border-radius: 4px; font-size: 8px;">
+            <div style="display: flex; justify-content: space-between;">
+              <span>1.2.1 数据库设计</span>
+              <span style="color: #8b5cf6; font-size: 10px;">💬</span>
+            </div>
+          </div>
+          <div style="background: #222; padding: 8px; border-radius: 4px; font-size: 8px;">1.2.2 API 开发</div>
+        </div>
+        
+        <!-- 聊天抽屉 -->
+        <div style="margin-top: 8px; background: #1e293b; border-radius: 8px; padding: 10px; flex: 1; display: flex; flex-direction: column;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="font-size: 8px; font-weight: bold; color: #8b5cf6;">
+              💬 AI · <span style="color: #3b82f6;">1.2.1 数据库设计</span>
+            </div>
+            <div style="font-size: 6px; color: #888; background: #334155; padding: 2px 4px; border-radius: 2px;">📌 第 3 层</div>
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 4px; overflow-y: auto;">
+            <div style="display: flex; gap: 4px;">
+              <div style="width: 18px; height: 18px; background: #3b82f6; border-radius: 50%;"></div>
+              <div style="background: #334155; padding: 4px 6px; border-radius: 6px; font-size: 6px; line-height: 1.3;">
+                帮我设计用户表的字段结构
+              </div>
+            </div>
+            <div style="display: flex; gap: 4px; flex-direction: row-reverse;">
+              <div style="width: 18px; height: 18px; background: #8b5cf6; border-radius: 50%;"></div>
+              <div style="background: #8b5cf622; border: 1px solid #8b5cf6; padding: 4px 6px; border-radius: 6px; font-size: 6px; line-height: 1.3;">
+                已更新任务描述和步骤：
+                <div style="margin-top: 4px; background: #1e293b; padding: 4px; border-radius: 2px; font-size: 5px;">
+                  • 添加 id, username, email 字段<br>
+                  • 添加索引优化查询
+                </div>
+                <div style="margin-top: 4px; display: flex; gap: 4px;">
+                  <button style="background: #22c55e; border: none; padding: 2px 4px; border-radius: 2px; font-size: 5px; color: white;">✓ 确认修改</button>
+                  <button style="background: #ef4444; border: none; padding: 2px 4px; border-radius: 2px; font-size: 5px; color: white;">× 撤销</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 16px;">
+  <h3>AI 智能修改任务元素</h3>
+  <p class="subtitle">用户可通过对话修改任务的任意属性</p>
+  
+  <div class="mockup">
+    <div class="mockup-header">AI 修改能力展示</div>
+    <div class="mockup-body" style="padding: 12px;">
+      <table style="width: 100%; font-size: 8px; border-collapse: collapse;">
+        <tr style="border-bottom: 1px solid #334155;">
+          <th style="text-align: left; padding: 6px; color: #888;">可修改元素</th>
+          <th style="text-align: left; padding: 6px; color: #888;">用户指令示例</th>
+          <th style="text-align: left; padding: 6px; color: #888;">AI 操作</th>
+        </tr>
+        <tr style="border-bottom: 1px solid #222;">
+          <td style="padding: 6px; color: #3b82f6;">📝 任务标题</td>
+          <td style="padding: 6px; color: #888;">"把标题改成更专业的表述"</td>
+          <td style="padding: 6px; color: #22c55e;">直接更新 + 高亮预览</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #222;">
+          <td style="padding: 6px; color: #3b82f6;">📄 任务描述</td>
+          <td style="padding: 6px; color: #888;">"补充详细的需求说明"</td>
+          <td style="padding: 6px; color: #22c55e;">Markdown 渲染 + 对比</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #222;">
+          <td style="padding: 6px; color: #3b82f6;">📋 执行步骤</td>
+          <td style="padding: 6px; color: #888;">"添加代码审查步骤"</td>
+          <td style="padding: 6px; color: #22c55e;">插入步骤列表</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #222;">
+          <td style="padding: 6px; color: #3b82f6;">👤 负责人 (Agent)</td>
+          <td style="padding: 6px; color: #888;">"分配给测试专家"</td>
+          <td style="padding: 6px; color: #22c55e;">切换 Agent 头像</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #222;">
+          <td style="padding: 6px; color: #3b82f6;">🔒 质量门</td>
+          <td style="padding: 6px; color: #888;">"要求输出必须是 JSON"</td>
+          <td style="padding: 6px; color: #22c55e;">启用质量门 + Schema</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #222;">
+          <td style="padding: 6px; color: #3b82f6;">🔗 依赖关系</td>
+          <td style="padding: 6px; color: #888;">"这个任务要等 1.1 完成后开始"</td>
+          <td style="padding: 6px; color: #22c55e;">添加依赖箭头</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #222;">
+          <td style="padding: 6px; color: #3b82f6;">🚦 任务状态</td>
+          <td style="padding: 6px; color: #888;">"标记为阻塞，等待评审"</td>
+          <td style="padding: 6px; color: #22c55e;">状态变更为 Blocked</td>
+        </tr>
+        <tr>
+          <td style="padding: 6px; color: #3b82f6;">🌳 子任务分解</td>
+          <td style="padding: 6px; color: #888;">"把这个任务拆成 3 个小任务"</td>
+          <td style="padding: 6px; color: #22c55e;">创建子节点 + 编号</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 16px;">
+  <h3>修改确认交互</h3>
+  <div class="split">
+    <div class="mockup">
+      <div class="mockup-header">AI 返回修改预览</div>
+      <div class="mockup-body" style="display: flex; flex-direction: column; gap: 4px; padding: 8px;">
+        <div style="background: #8b5cf622; border: 1px solid #8b5cf6; padding: 8px; border-radius: 4px;">
+          <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 6px;">
+            <span style="color: #8b5cf6;">✨</span>
+            <span style="font-size: 7px; font-weight: bold; color: #8b5cf6;">AI 建议修改</span>
+          </div>
+          <div style="font-size: 6px; color: #888; margin-bottom: 4px;">任务 1.2.1 · 数据库设计</div>
+          
+          <!-- 修改对比 -->
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <div style="background: #ef444422; border-left: 2px solid #ef4444; padding: 4px; font-size: 6px;">
+              <span style="color: #ef4444;">−</span> 设计用户表
+            </div>
+            <div style="background: #22c55e22; border-left: 2px solid #22c55e; padding: 4px; font-size: 6px;">
+              <span style="color: #22c55e;">+</span> 设计用户数据库表结构（含索引优化）
+            </div>
+          </div>
+          
+          <!-- 新增内容 -->
+          <div style="margin-top: 6px; padding-top: 6px; border-top: 1px dashed #8b5cf644;">
+            <div style="font-size: 5px; color: #888; margin-bottom: 2px;">新增执行步骤:</div>
+            <div style="font-size: 6px; color: #22c55e;">① ER 图设计 &nbsp; ② 建表脚本 &nbsp; ③ 索引优化</div>
+          </div>
+          
+          <!-- 操作按钮 -->
+          <div style="display: flex; gap: 4px; margin-top: 8px;">
+            <button style="flex: 1; background: #22c55e; border: none; padding: 6px; border-radius: 4px; font-size: 7px; font-weight: bold; color: white;">✓ 应用修改</button>
+            <button style="flex: 1; background: #334155; border: none; padding: 6px; border-radius: 4px; font-size: 7px; color: white;">↺ 重新生成</button>
+            <button style="flex: 1; background: #ef4444; border: none; padding: 6px; border-radius: 4px; font-size: 7px; font-weight: bold; color: white;">× 拒绝</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mockup">
+      <div class="mockup-header">多任务批量修改</div>
+      <div class="mockup-body" style="display: flex; flex-direction: column; gap: 4px; padding: 8px;">
+        <div style="background: #3b82f622; border: 1px solid #3b82f6; padding: 8px; border-radius: 4px;">
+          <div style="font-size: 7px; font-weight: bold; color: #3b82f6; margin-bottom: 4px;">🔄 批量修改影响 3 个任务</div>
+          <div style="display: flex; flex-direction: column; gap: 2px;">
+            <div style="display: flex; align-items: center; gap: 4px; font-size: 6px;">
+              <input type="checkbox" checked style="accent-color: #3b82f6;">
+              <span>1.2.1 数据库设计</span>
+              <span style="color: #22c55e; font-size: 5px;">→ 添加负责人</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 4px; font-size: 6px;">
+              <input type="checkbox" checked style="accent-color: #3b82f6;">
+              <span>1.2.2 API 开发</span>
+              <span style="color: #22c55e; font-size: 5px;">→ 添加负责人</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 4px; font-size: 6px;">
+              <input type="checkbox" checked style="accent-color: #3b82f6;">
+              <span>1.2.3 前端页面</span>
+              <span style="color: #22c55e; font-size: 5px;">→ 添加负责人</span>
+            </div>
+          </div>
+          <div style="display: flex; gap: 4px; margin-top: 6px;">
+            <button style="flex: 1; background: #3b82f6; border: none; padding: 4px; border-radius: 2px; font-size: 6px; color: white;">✓ 全部应用</button>
+            <button style="background: none; border: 1px solid #666; padding: 4px; border-radius: 2px; font-size: 6px; color: #888;">取消</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="options" style="margin-top: 16px;">
+  <div class="option" data-choice="ai-modify-confirmed" onclick="toggleSelect(this)">
+    <div class="letter">✓</div>
+    <div class="content">
+      <h3>确认 AI 修改方案</h3>
+      <p>支持针对任意层级任务聊天，AI 可修改所有任务元素，修改前有预览确认</p>
+    </div>
+  </div>
+</div>

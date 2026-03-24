@@ -1,0 +1,87 @@
+:root {
+  /* 深色主题（默认） */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --border-color: #334155;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --brand-blue: #3b82f6;
+  --brand-purple: #8b5cf6;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+
+  /* 浅色主题覆盖 */
+  --light-bg-primary: #ffffff;
+  --light-bg-secondary: #f8fafc;
+  --light-border-color: #e2e8f0;
+  --light-text-primary: #1e293b;
+  --light-text-secondary: #64748b;
+  --light-brand-blue: #2563eb;
+  --light-brand-purple: #7c3aed;
+  --light-success: #16a34a;
+  --light-warning: #ca8a04;
+  --light-danger: #dc2626;
+}
+
+.light {
+  --bg-primary: var(--light-bg-primary);
+  --bg-secondary: var(--light-bg-secondary);
+  --border-color: var(--light-border-color);
+  --text-primary: var(--light-text-primary);
+  --text-secondary: var(--light-text-secondary);
+  --brand-blue: var(--light-brand-blue);
+  --brand-purple: var(--light-brand-purple);
+  --success: var(--light-success);
+  --warning: var(--light-warning);
+  --danger: var(--light-danger);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei', sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+code {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* 自定义滚动条 - 极细滚动条，hover 时显示 */
+::-webkit-scrollbar {
+  width: 2px;
+  height: 2px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 1px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+  opacity: 1;
+}
+
+/* 容器 hover 时显示滚动条 */
+.overflow-y-auto:hover::-webkit-scrollbar-thumb {
+  opacity: 1;
+}
+
+/* Firefox 滚动条 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
