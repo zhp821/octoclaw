@@ -16,6 +16,7 @@ export function handlePicoMessage(
   expectedSessionId: string
 ): void {
   if (message.session_id !== expectedSessionId) {
+    console.warn('Session ID mismatch', message.session_id, expectedSessionId)
     return
   }
 
@@ -59,6 +60,12 @@ export function handlePicoMessage(
     case 'error': {
       const error = (message.payload?.error as string) ?? 'Unknown error'
       console.error('WebSocket error:', error)
+      store.addMessage(expectedSessionId, {
+        id: `error-${Date.now()}`,
+        role: 'system',
+        content: `Error: ${error}`,
+        timestamp: formatTimestamp(),
+      })
       store.setTyping(expectedSessionId, false)
       break
     }
