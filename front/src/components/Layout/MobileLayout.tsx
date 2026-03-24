@@ -237,11 +237,11 @@ export function MobileLayout() {
                   onClick={() => setStatusFilter(statusFilter === 'cancel' ? null : 'cancel')}
                   className={`px-1.5 py-0.5 text-[10px] rounded whitespace-nowrap flex items-center gap-0.5 ${
                     statusFilter === 'cancel'
-                      ? 'text-gray-500 font-medium'
+                      ? 'text-gray-700 font-medium'
                       : 'text-dark-text-secondary'
                   }`}
                 >
-                  <span className={`w-1 h-1 rounded-full ${statusFilter === 'cancel' ? 'bg-gray-500' : 'bg-gray-400'}`} />
+                  <span className={`w-1 h-1 rounded-full ${statusFilter === 'cancel' ? 'bg-black/60' : 'bg-gray-400'}`} />
                   取消
                 </button>
               </div>

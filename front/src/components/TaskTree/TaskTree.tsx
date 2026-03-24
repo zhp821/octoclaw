@@ -107,11 +107,11 @@ export function TaskTree() {
 
   const statusOptions: { value: TaskStatus | null; label: string; color: string }[] = [
     { value: null, label: '全部状态', color: 'bg-gray-400' },
-    { value: 'todo', label: '待办', color: 'bg-gray-500' },
+    { value: 'todo', label: '待办', color: 'bg-gray-400' },
     { value: 'in-progress', label: '进行中', color: 'bg-blue-500' },
     { value: 'blocked', label: '阻塞', color: 'bg-red-500' },
     { value: 'done', label: '已完成', color: 'bg-green-500' },
-    { value: 'cancel', label: '取消', color: 'bg-gray-500' },
+    { value: 'cancel', label: '取消', color: 'bg-black/50' },
   ]
 
   const currentStatus = statusOptions.find(s => s.value === statusFilter) || statusOptions[0]
