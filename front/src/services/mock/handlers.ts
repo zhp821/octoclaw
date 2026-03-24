@@ -1,6 +1,7 @@
 import { http, HttpResponse, delay } from 'msw'
 import { generateMockData, findTaskById } from './mockData'
 import type { TaskNode, ChatMessage } from '@/types'
+import { STATUS_CONFIG } from '@/config/status'
 
 let mockData = generateMockData()
 
@@ -8,7 +9,11 @@ export const handlers = [
   http.get('/api/tasks', async () => {
     await delay(300)
     return HttpResponse.json({
-      data: { roots: mockData.roots, agents: mockData.agents },
+      data: { 
+        roots: mockData.roots, 
+        agents: mockData.agents,
+        statusConfig: STATUS_CONFIG,
+      },
       success: true,
     })
   }),

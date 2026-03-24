@@ -1,4 +1,5 @@
 import type { TaskNode, ProjectData, Agent, ChatMessage } from '@/types'
+import type { StatusOption } from '@/config/status'
 import axios from 'axios'
 
 /**
@@ -17,8 +18,8 @@ const api = axios.create({
  * 任务相关 API
  */
 export const taskApi = {
-  async fetchTasks(): Promise<ProjectData> {
-    const response = await api.get<{ data: ProjectData; success: boolean }>('tasks')
+  async fetchTasks(): Promise<ProjectData & { statusConfig?: StatusOption[] }> {
+    const response = await api.get<{ data: ProjectData & { statusConfig?: StatusOption[] }; success: boolean }>('tasks')
     return response.data.data
   },
 

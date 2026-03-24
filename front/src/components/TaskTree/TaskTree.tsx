@@ -89,7 +89,7 @@ function SortableTask({ task, depth, onCreateSubtask }: SortableTaskProps) {
 }
 
 export function TaskTree() {
-  const { roots, startCreateTask, reorderRoots } = useTaskStore()
+  const { roots, startCreateTask, reorderRoots, statusConfig } = useTaskStore()
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<TaskStatus | null>(null)
   const [showStatusDropdown, setShowStatusDropdown] = useState(false)
@@ -106,7 +106,9 @@ export function TaskTree() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const currentStatus = STATUS_CONFIG.find(s => s.value === statusFilter) || STATUS_CONFIG[0]
+  // 使用 store 中的状态配置，如果没有则使用默认配置
+  const config = statusConfig && statusConfig.length > 0 ? statusConfig : STATUS_CONFIG
+  const currentStatus = config.find(s => s.value === statusFilter) || config[0]
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
@@ -158,8 +160,8 @@ export function TaskTree() {
               onClick={() => setShowStatusDropdown(!showStatusDropdown)}
               className="w-[80px] px-1.5 py-1 text-[11px] bg-white dark:bg-dark-secondary border border-dark-border rounded text-dark-text-primary focus:outline-none focus:ring-1 focus:ring-brand-blue flex items-center justify-between gap-1"
             >
-              <span className="truncate">
-                <span className={`inline-block w-1.5 h-1.5 rounded-full ${currentStatus.color} mr-1`} />
+              <span className="truncate flex items-center gap-1">
+                <span className={`flex-shrink-0 ${currentStatus.icon}`} />
                 {currentStatus.label}
               </span>
               <ChevronDownIcon size={10} className={`flex-shrink-0 transition-transform ${showStatusDropdown ? 'rotate-180' : ''}`} />
@@ -167,7 +169,7 @@ export function TaskTree() {
             
             {showStatusDropdown && (
               <div className="absolute top-full left-0 mt-0.5 bg-white dark:bg-dark-secondary border border-dark-border rounded shadow-xl z-[100] min-w-[100px] overflow-hidden">
-                {STATUS_CONFIG.map(option => (
+                {config.map(option => (
                   <button
                     key={option.value || 'all'}
                     onClick={() => {
@@ -178,7 +180,7 @@ export function TaskTree() {
                       statusFilter === option.value ? 'bg-gray-100 dark:bg-dark-border' : ''
                     }`}
                   >
-                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${option.color}`} />
+                    <span className={`flex-shrink-0 ${option.icon}`} />
                     <span className="truncate">{option.label}</span>
                   </button>
                 ))}

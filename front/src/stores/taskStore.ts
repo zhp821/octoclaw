@@ -1,10 +1,12 @@
 import { create } from 'zustand'
 import type { TaskNode, ProjectData } from '@/types'
+import type { StatusOption } from '@/config/status'
 import taskApi from '@/services/taskApi'
 
 interface TaskState {
   roots: TaskNode[]
   agents: ProjectData['agents']
+  statusConfig: StatusOption[]
   expandedIds: Set<string>
   selectedId: string | null
   isLoading: boolean
@@ -41,6 +43,7 @@ function flattenTasks(roots: TaskNode[]): TaskNode[] {
 export const useTaskStore = create<TaskState>((set, get) => ({
   roots: [],
   agents: [],
+  statusConfig: [],
   expandedIds: new Set(),
   selectedId: null,
   isLoading: false,
@@ -52,7 +55,12 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     set({ isLoading: true })
     try {
       const data = await taskApi.fetchTasks()
-      set({ roots: data.roots, agents: data.agents, isLoading: false })
+      set({ 
+        roots: data.roots, 
+        agents: data.agents,
+        statusConfig: data.statusConfig || [],
+        isLoading: false 
+      })
     } catch (error) {
       console.error('Failed to fetch tasks:', error)
       set({ isLoading: false })

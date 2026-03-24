@@ -14,9 +14,12 @@ export function MobileLayout() {
   const [chatDrawerHeight, setChatDrawerHeight] = useState(50)
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<TaskStatus | null>(null)
-  const { fetchTasks, selectedId, roots, isCreatingTask, startCreateTask, cancelCreateTask, selectTask } = useTaskStore()
+  const { fetchTasks, selectedId, roots, isCreatingTask, startCreateTask, cancelCreateTask, selectTask, statusConfig } = useTaskStore()
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const detailContainerRef = useRef<HTMLDivElement>(null)
+
+  // 使用 store 中的状态配置，如果没有则使用默认配置
+  const config = statusConfig && statusConfig.length > 0 ? statusConfig : STATUS_CONFIG
 
   useEffect(() => {
     fetchTasks()
@@ -190,7 +193,7 @@ export function MobileLayout() {
               </div>
               {/* 状态过滤 - 缩小版 */}
               <div className="flex items-center gap-0.5 ml-1 overflow-x-auto">
-                {STATUS_CONFIG.filter(s => s.value !== null).map(option => (
+                {config.filter(s => s.value !== null).map(option => (
                   <button
                     key={option.value}
                     onClick={() => setStatusFilter(statusFilter === option.value ? null : option.value)}
@@ -204,7 +207,7 @@ export function MobileLayout() {
                         : 'text-dark-text-secondary'
                     }`}
                   >
-                    <span className={`w-1 h-1 rounded-full flex-shrink-0 ${option.color}`} />
+                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${option.icon}`} />
                     {option.label}
                   </button>
                 ))}
