@@ -13,7 +13,7 @@ export function formatTimestamp(date?: Date): Timestamp {
 }
 
 export function parseTimestamp(ts: Timestamp): Date {
-  const str = ts.padEnd(17, '0')
+  const str = ts.padEnd(15, '0')
   const yy = parseInt(str.slice(0, 2), 10)
   const MM = parseInt(str.slice(2, 4), 10)
   const DD = parseInt(str.slice(4, 6), 10)
