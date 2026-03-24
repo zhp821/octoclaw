@@ -3,12 +3,16 @@ let currentGeneration = 0;
 let currentSessionId: string | null = null;
 
 export function normalizeWsUrlForBrowser(wsUrl: string): string {
+  if (!wsUrl) {
+    throw new Error('wsUrl parameter cannot be null or empty');
+  }
+
   if (wsUrl.startsWith('ws://') || wsUrl.startsWith('wss://')) {
     return wsUrl;
   }
 
-  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const host = window.location.host;
+  const protocol = typeof window !== 'undefined' && window.location?.protocol === 'https:' ? 'wss:' : 'ws:';
+  const host = typeof window !== 'undefined' && window.location?.host ? window.location.host : 'localhost';
 
   if (wsUrl.startsWith('/')) {
     return `${protocol}//${host}${wsUrl}`;
@@ -25,7 +29,7 @@ export function invalidateSocket(socket: WebSocket | null): void {
   socket.onclose = null;
   socket.onerror = null;
 
-  if (socket.readyState === WebSocket.OPEN) {
+  if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CLOSING) {
     socket.close();
   }
 }
