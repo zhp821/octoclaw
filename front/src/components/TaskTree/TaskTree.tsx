@@ -136,7 +136,20 @@ export function TaskTree() {
     <div className="overflow-y-auto h-full flex flex-col">
       <div className="p-2 border-b border-dark-border flex-shrink-0">
         <div className="flex items-center gap-2 mb-2">
-          <h2 className="text-sm font-bold text-dark-text-secondary uppercase whitespace-nowrap">任务树</h2>
+          {/* 状态下拉框 */}
+          <select
+            value={statusFilter || ''}
+            onChange={(e) => setStatusFilter(e.target.value as TaskStatus | null)}
+            className="px-2 py-1 text-xs bg-dark-secondary border border-dark-border rounded text-dark-text-primary focus:outline-none focus:ring-1 focus:ring-brand-blue"
+          >
+            <option value="">全部状态</option>
+            <option value="todo">待办</option>
+            <option value="in-progress">进行中</option>
+            <option value="blocked">阻塞</option>
+            <option value="done">已完成</option>
+            <option value="cancel">取消</option>
+          </select>
+          
           <div className="relative flex-1 min-w-0">
             <Search size={14} className="absolute left-1.5 top-1/2 -translate-y-1/2 text-dark-text-secondary" />
             <input
@@ -152,64 +165,6 @@ export function TaskTree() {
             className="p-1 text-brand-blue hover:bg-brand-blue/10 rounded flex-shrink-0"
           >
             <Plus size={16} />
-          </button>
-        </div>
-        {/* 状态过滤 */}
-        <div className="flex items-center gap-1 overflow-x-auto">
-          <button
-            onClick={() => setStatusFilter(statusFilter === 'todo' ? null : 'todo')}
-            className={`px-2 py-1 text-xs rounded whitespace-nowrap border flex items-center gap-1 ${
-              statusFilter === 'todo'
-                ? 'bg-blue-500 text-white border-blue-500'
-                : 'bg-dark-secondary text-dark-text-secondary border-dark-border'
-            }`}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-gray-500" />
-            待办
-          </button>
-          <button
-            onClick={() => setStatusFilter(statusFilter === 'in-progress' ? null : 'in-progress')}
-            className={`px-2 py-1 text-xs rounded whitespace-nowrap border flex items-center gap-1 ${
-              statusFilter === 'in-progress'
-                ? 'bg-blue-500 text-white border-blue-500'
-                : 'bg-dark-secondary text-dark-text-secondary border-dark-border'
-            }`}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-            进行中
-          </button>
-          <button
-            onClick={() => setStatusFilter(statusFilter === 'blocked' ? null : 'blocked')}
-            className={`px-2 py-1 text-xs rounded whitespace-nowrap border flex items-center gap-1 ${
-              statusFilter === 'blocked'
-                ? 'bg-red-500 text-white border-red-500'
-                : 'bg-dark-secondary text-dark-text-secondary border-dark-border'
-            }`}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-            阻塞
-          </button>
-          <button
-            onClick={() => setStatusFilter(statusFilter === 'done' ? null : 'done')}
-            className={`px-2 py-1 text-xs rounded whitespace-nowrap border flex items-center gap-1 ${
-              statusFilter === 'done'
-                ? 'bg-green-500 text-white border-green-500'
-                : 'bg-dark-secondary text-dark-text-secondary border-dark-border'
-            }`}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-            已完成
-          </button>
-          <button
-            onClick={() => setStatusFilter(statusFilter === 'cancel' ? null : 'cancel')}
-            className={`px-2 py-1 text-xs rounded whitespace-nowrap border flex items-center gap-1 ${
-              statusFilter === 'cancel'
-                ? 'bg-gray-500 text-white border-gray-500'
-                : 'bg-dark-secondary text-dark-text-secondary border-dark-border'
-            }`}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-            取消
           </button>
         </div>
       </div>
