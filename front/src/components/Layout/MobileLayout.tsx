@@ -4,7 +4,7 @@ import { TaskDetail } from '@/components/TaskDetail/TaskDetail'
 import { ChatPanel } from '@/components/Chat/ChatPanel'
 import { NewTaskForm } from '@/components/TaskDetail/NewTaskForm'
 import { useTaskStore } from '@/stores/taskStore'
-import { ChevronLeft, MessageCircle, Plus, X, Home, Search } from 'lucide-react'
+import { ChevronLeft, MessageCircle, Plus, X } from 'lucide-react'
 import type { TaskNode, TaskStatus } from '@/types'
 
 export function MobileLayout() {
@@ -157,11 +157,6 @@ export function MobileLayout() {
               <ChevronLeft size={20} className="text-slate-900 dark:text-dark-text-primary" />
             </button>
           )}
-          {view === 'list' && (
-            <button className="p-1 hover:bg-gray-100 dark:hover:bg-dark-border rounded flex-shrink-0">
-              <Home size={20} className="text-slate-900 dark:text-dark-text-primary" />
-            </button>
-          )}
           <div className="flex items-center gap-1 min-w-0">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" className="w-5 h-5 flex-shrink-0">
               <defs>
@@ -182,15 +177,85 @@ export function MobileLayout() {
             <h1 className="font-bold text-sm text-slate-900 dark:text-dark-text-primary whitespace-nowrap">OctoClaw</h1>
           </div>
           {view === 'list' && (
-            <div className="relative flex-1 min-w-0 ml-2">
-              <input
-                type="text"
-                placeholder="搜索..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full max-w-[120px] pl-2 pr-2 py-1 text-xs bg-gray-100 dark:bg-dark-secondary border border-dark-border rounded focus:outline-none focus:ring-1 focus:ring-brand-blue text-dark-text-primary placeholder-dark-text-secondary"
-              />
-            </div>
+            <>
+              <div className="relative flex-1 min-w-0 ml-2">
+                <input
+                  type="text"
+                  placeholder="搜索..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full max-w-[100px] pl-2 pr-2 py-0.5 text-xs bg-transparent border border-gray-300 dark:border-dark-border rounded focus:outline-none focus:ring-1 focus:ring-brand-blue text-dark-text-primary placeholder-dark-text-secondary"
+                />
+              </div>
+              {/* 状态过滤 - 缩小版 */}
+              <div className="flex items-center gap-0.5 ml-1 overflow-x-auto">
+                <button
+                  onClick={() => setStatusFilter(null)}
+                  className={`px-1.5 py-0.5 text-[10px] rounded whitespace-nowrap flex items-center gap-0.5 ${
+                    statusFilter === null
+                      ? 'text-brand-blue font-medium'
+                      : 'text-dark-text-secondary'
+                  }`}
+                >
+                  全部
+                </button>
+                <button
+                  onClick={() => setStatusFilter(statusFilter === 'todo' ? null : 'todo')}
+                  className={`px-1.5 py-0.5 text-[10px] rounded whitespace-nowrap flex items-center gap-0.5 ${
+                    statusFilter === 'todo'
+                      ? 'text-blue-500 font-medium'
+                      : 'text-dark-text-secondary'
+                  }`}
+                >
+                  <span className={`w-1 h-1 rounded-full ${statusFilter === 'todo' ? 'bg-blue-500' : 'bg-gray-400'}`} />
+                  待办
+                </button>
+                <button
+                  onClick={() => setStatusFilter(statusFilter === 'in-progress' ? null : 'in-progress')}
+                  className={`px-1.5 py-0.5 text-[10px] rounded whitespace-nowrap flex items-center gap-0.5 ${
+                    statusFilter === 'in-progress'
+                      ? 'text-blue-500 font-medium'
+                      : 'text-dark-text-secondary'
+                  }`}
+                >
+                  <span className={`w-1 h-1 rounded-full ${statusFilter === 'in-progress' ? 'bg-blue-500' : 'bg-blue-500'}`} />
+                  进行中
+                </button>
+                <button
+                  onClick={() => setStatusFilter(statusFilter === 'blocked' ? null : 'blocked')}
+                  className={`px-1.5 py-0.5 text-[10px] rounded whitespace-nowrap flex items-center gap-0.5 ${
+                    statusFilter === 'blocked'
+                      ? 'text-red-500 font-medium'
+                      : 'text-dark-text-secondary'
+                  }`}
+                >
+                  <span className={`w-1 h-1 rounded-full ${statusFilter === 'blocked' ? 'bg-red-500' : 'bg-red-500'}`} />
+                  阻塞
+                </button>
+                <button
+                  onClick={() => setStatusFilter(statusFilter === 'done' ? null : 'done')}
+                  className={`px-1.5 py-0.5 text-[10px] rounded whitespace-nowrap flex items-center gap-0.5 ${
+                    statusFilter === 'done'
+                      ? 'text-green-500 font-medium'
+                      : 'text-dark-text-secondary'
+                  }`}
+                >
+                  <span className={`w-1 h-1 rounded-full ${statusFilter === 'done' ? 'bg-green-500' : 'bg-green-500'}`} />
+                  已完成
+                </button>
+                <button
+                  onClick={() => setStatusFilter(statusFilter === 'cancel' ? null : 'cancel')}
+                  className={`px-1.5 py-0.5 text-[10px] rounded whitespace-nowrap flex items-center gap-0.5 ${
+                    statusFilter === 'cancel'
+                      ? 'text-gray-500 font-medium'
+                      : 'text-dark-text-secondary'
+                  }`}
+                >
+                  <span className={`w-1 h-1 rounded-full ${statusFilter === 'cancel' ? 'bg-gray-500' : 'bg-gray-400'}`} />
+                  取消
+                </button>
+              </div>
+            </>
           )}
         </div>
         <div className="flex items-center gap-1 flex-shrink-0">
@@ -214,79 +279,6 @@ export function MobileLayout() {
           )}
         </div>
       </header>
-
-      {/* 状态过滤 - 仅在列表视图显示 */}
-      {view === 'list' && (
-        <div className="px-3 py-2 border-b border-gray-200 dark:border-dark-border flex-shrink-0">
-          <div className="flex items-center gap-1 overflow-x-auto">
-            <button
-              onClick={() => setStatusFilter(null)}
-              className={`px-2 py-1 text-xs rounded whitespace-nowrap border flex items-center gap-1 ${
-                statusFilter === null
-                  ? 'bg-brand-blue text-white border-brand-blue'
-                  : 'bg-gray-100 dark:bg-dark-secondary text-dark-text-secondary border-dark-border'
-              }`}
-            >
-              全部
-            </button>
-            <button
-              onClick={() => setStatusFilter(statusFilter === 'todo' ? null : 'todo')}
-              className={`px-2 py-1 text-xs rounded whitespace-nowrap border flex items-center gap-1 ${
-                statusFilter === 'todo'
-                  ? 'bg-blue-500 text-white border-blue-500'
-                  : 'bg-gray-100 dark:bg-dark-secondary text-dark-text-secondary border-dark-border'
-              }`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-gray-500" />
-              待办
-            </button>
-            <button
-              onClick={() => setStatusFilter(statusFilter === 'in-progress' ? null : 'in-progress')}
-              className={`px-2 py-1 text-xs rounded whitespace-nowrap border flex items-center gap-1 ${
-                statusFilter === 'in-progress'
-                  ? 'bg-blue-500 text-white border-blue-500'
-                  : 'bg-gray-100 dark:bg-dark-secondary text-dark-text-secondary border-dark-border'
-              }`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-              进行中
-            </button>
-            <button
-              onClick={() => setStatusFilter(statusFilter === 'blocked' ? null : 'blocked')}
-              className={`px-2 py-1 text-xs rounded whitespace-nowrap border flex items-center gap-1 ${
-                statusFilter === 'blocked'
-                  ? 'bg-red-500 text-white border-red-500'
-                  : 'bg-gray-100 dark:bg-dark-secondary text-dark-text-secondary border-dark-border'
-              }`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-              阻塞
-            </button>
-            <button
-              onClick={() => setStatusFilter(statusFilter === 'done' ? null : 'done')}
-              className={`px-2 py-1 text-xs rounded whitespace-nowrap border flex items-center gap-1 ${
-                statusFilter === 'done'
-                  ? 'bg-green-500 text-white border-green-500'
-                  : 'bg-gray-100 dark:bg-dark-secondary text-dark-text-secondary border-dark-border'
-              }`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-              已完成
-            </button>
-            <button
-              onClick={() => setStatusFilter(statusFilter === 'cancel' ? null : 'cancel')}
-              className={`px-2 py-1 text-xs rounded whitespace-nowrap border flex items-center gap-1 ${
-                statusFilter === 'cancel'
-                  ? 'bg-gray-500 text-white border-gray-500'
-                  : 'bg-gray-100 dark:bg-dark-secondary text-dark-text-secondary border-dark-border'
-              }`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-              取消
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* 内容区域 */}
       <div className="flex-1 overflow-hidden relative">
