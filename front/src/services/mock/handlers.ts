@@ -2,6 +2,7 @@ import { http, HttpResponse, delay } from 'msw'
 import { generateMockData, findTaskById } from './mockData'
 import type { TaskNode, ChatMessage } from '@/types'
 import { STATUS_CONFIG } from '@/config/status'
+import { formatTimestamp } from '@/utils/timestamp'
 
 let mockData = generateMockData()
 
@@ -97,7 +98,7 @@ export const handlers = [
       id: `msg-${Date.now()}`,
       role: 'assistant',
       content: `收到消息："${content}"。这是一个 Mock 响应，模拟 AI 助手。`,
-      timestamp: Date.now(),
+      timestamp: formatTimestamp(),
       relatedAction: 'modify',
       pendingChanges: {
         title: 'Updated by AI',

@@ -1,28 +1,34 @@
 import { create } from 'zustand'
 import type { ChatMessage } from '@/types'
 import chatApi from '@/services/chatApi'
+import { formatTimestamp } from '@/utils/timestamp'
 
 interface ChatState {
   messages: Record<string, ChatMessage[]>
   rootMessages: ChatMessage[] // 根任务聊天消息（未选择任务时）
   isLoading: boolean
+  typing: Record<string, boolean>
 
   sendMessage: (taskId: string | null, content: string) => Promise<void>
   applyChanges: (taskId: string, messageId: string) => Promise<void>
   clearHistory: (taskId: string | null) => void
+  addMessage: (sessionId: string, message: ChatMessage) => void
+  updateMessage: (sessionId: string, messageId: string, updates: Partial<ChatMessage>) => void
+  setTyping: (sessionId: string, isTyping: boolean) => void
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
   messages: {},
   rootMessages: [],
   isLoading: false,
+  typing: {},
 
   sendMessage: async (taskId: string | null, content: string) => {
     const userMessage: ChatMessage = {
       id: `msg-${Date.now()}`,
       role: 'user',
       content,
-      timestamp: Date.now(),
+      timestamp: formatTimestamp(),
     }
 
     if (!taskId) {
@@ -85,5 +91,51 @@ export const useChatStore = create<ChatState>((set, get) => ({
         return { messages: newMessages }
       })
     }
+  },
+
+  addMessage: (sessionId: string, message: ChatMessage) => {
+    if (sessionId === 'root') {
+      set(state => ({
+        rootMessages: [...state.rootMessages, message],
+      }))
+    } else {
+      set(state => ({
+        messages: {
+          ...state.messages,
+          [sessionId]: [...(state.messages[sessionId] || []), message],
+        },
+      }))
+    }
+  },
+
+  updateMessage: (sessionId: string, messageId: string, updates: Partial<ChatMessage>) => {
+    if (sessionId === 'root') {
+      set(state => ({
+        rootMessages: state.rootMessages.map(m =>
+          m.id === messageId ? { ...m, ...updates } : m
+        ),
+      }))
+    } else {
+      set(state => {
+        const messages = state.messages[sessionId] || []
+        return {
+          messages: {
+            ...state.messages,
+            [sessionId]: messages.map(m =>
+              m.id === messageId ? { ...m, ...updates } : m
+            ),
+          },
+        }
+      })
+    }
+  },
+
+  setTyping: (sessionId: string, isTyping: boolean) => {
+    set(state => ({
+      typing: {
+        ...state.typing,
+        [sessionId]: isTyping,
+      },
+    }))
   },
 }))
