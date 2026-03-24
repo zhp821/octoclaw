@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { DndContext, DragEndEvent, closestCenter } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useTaskStore } from '@/stores/taskStore'
-import { GripVertical, ChevronRight, ChevronDown, MessageCircle, Search, Plus } from 'lucide-react'
+import { GripVertical, ChevronRight, ChevronDown, MessageCircle, Search, Plus, ChevronDown as ChevronDownIcon } from 'lucide-react'
 import type { TaskNode, TaskStatus } from '@/types'
 
 interface SortableTaskProps {
@@ -91,6 +91,30 @@ export function TaskTree() {
   const { roots, startCreateTask, reorderRoots } = useTaskStore()
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<TaskStatus | null>(null)
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  // 点击外部关闭下拉框
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowStatusDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const statusOptions: { value: TaskStatus | null; label: string; color: string }[] = [
+    { value: null, label: '全部状态', color: 'bg-gray-400' },
+    { value: 'todo', label: '待办', color: 'bg-gray-500' },
+    { value: 'in-progress', label: '进行中', color: 'bg-blue-500' },
+    { value: 'blocked', label: '阻塞', color: 'bg-red-500' },
+    { value: 'done', label: '已完成', color: 'bg-green-500' },
+    { value: 'cancel', label: '取消', color: 'bg-gray-500' },
+  ]
+
+  const currentStatus = statusOptions.find(s => s.value === statusFilter) || statusOptions[0]
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
@@ -137,18 +161,38 @@ export function TaskTree() {
       <div className="p-2 border-b border-dark-border flex-shrink-0">
         <div className="flex items-center gap-2 mb-2">
           {/* 状态下拉框 */}
-          <select
-            value={statusFilter || ''}
-            onChange={(e) => setStatusFilter(e.target.value as TaskStatus | null)}
-            className="px-2 py-1 text-xs bg-dark-secondary border border-dark-border rounded text-dark-text-primary focus:outline-none focus:ring-1 focus:ring-brand-blue"
-          >
-            <option value="">全部状态</option>
-            <option value="todo">待办</option>
-            <option value="in-progress">进行中</option>
-            <option value="blocked">阻塞</option>
-            <option value="done">已完成</option>
-            <option value="cancel">取消</option>
-          </select>
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setShowStatusDropdown(!showStatusDropdown)}
+              className="w-[80px] px-2 py-1 text-xs bg-dark-secondary border border-dark-border rounded text-dark-text-primary focus:outline-none focus:ring-1 focus:ring-brand-blue flex items-center justify-between gap-1"
+            >
+              <span className="truncate">
+                <span className={`inline-block w-1.5 h-1.5 rounded-full ${currentStatus.color} mr-1`} />
+                {currentStatus.label}
+              </span>
+              <ChevronDownIcon size={12} className={`flex-shrink-0 transition-transform ${showStatusDropdown ? 'rotate-180' : ''}`} />
+            </button>
+            
+            {showStatusDropdown && (
+              <div className="absolute top-full left-0 mt-1 bg-dark-secondary border border-dark-border rounded shadow-lg z-50 min-w-[100px]">
+                {statusOptions.map(option => (
+                  <button
+                    key={option.value || 'all'}
+                    onClick={() => {
+                      setStatusFilter(option.value)
+                      setShowStatusDropdown(false)
+                    }}
+                    className={`w-full px-3 py-1.5 text-xs text-left hover:bg-dark-border flex items-center gap-2 ${
+                      statusFilter === option.value ? 'bg-dark-border' : ''
+                    }`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${option.color}`} />
+                    <span className="truncate">{option.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           
           <div className="relative flex-1 min-w-0">
             <Search size={14} className="absolute left-1.5 top-1/2 -translate-y-1/2 text-dark-text-secondary" />
