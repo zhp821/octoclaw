@@ -60,7 +60,7 @@ function SortableTask({ task, depth, onCreateSubtask }: SortableTaskProps) {
           task.status === 'done' ? 'bg-green-500' :
           task.status === 'in-progress' ? 'bg-blue-500' :
           task.status === 'blocked' ? 'bg-red-500' :
-          task.status === 'cancel' ? 'bg-gray-400' :
+          task.status === 'cancel' ? 'bg-black' :
           'bg-gray-500'
         }`} title={task.status} />
         
@@ -162,9 +162,9 @@ export function TaskTree() {
             >
               <span className="truncate flex items-center gap-1">
                 <span className={`flex-shrink-0 ${currentStatus.icon}`} />
-                {currentStatus.label}
+                <span className="text-dark-text-primary">{currentStatus.label}</span>
               </span>
-              <ChevronDownIcon size={10} className={`flex-shrink-0 transition-transform ${showStatusDropdown ? 'rotate-180' : ''}`} />
+              <ChevronDownIcon size={10} className={`flex-shrink-0 text-dark-text-primary transition-transform ${showStatusDropdown ? 'rotate-180' : ''}`} />
             </button>
             
             {showStatusDropdown && (
@@ -181,7 +181,7 @@ export function TaskTree() {
                     }`}
                   >
                     <span className={`flex-shrink-0 ${option.icon}`} />
-                    <span className="truncate">{option.label}</span>
+                    <span className="truncate text-dark-text-primary">{option.label}</span>
                   </button>
                 ))}
               </div>
@@ -195,7 +195,7 @@ export function TaskTree() {
               placeholder="搜索..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-6 pr-2 py-1 text-xs bg-dark-secondary border border-dark-border rounded focus:outline-none focus:ring-1 focus:ring-brand-blue text-dark-text-primary placeholder-dark-text-secondary"
+              className="w-full pl-6 pr-2 py-1 text-xs bg-white dark:bg-dark-secondary border border-dark-border rounded focus:outline-none focus:ring-1 focus:ring-brand-blue text-dark-text-primary placeholder-dark-text-secondary"
             />
           </div>
           <button

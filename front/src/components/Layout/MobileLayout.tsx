@@ -188,7 +188,7 @@ export function MobileLayout() {
                   placeholder="搜索..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full max-w-[100px] pl-2 pr-2 py-0.5 text-xs bg-transparent border border-gray-300 dark:border-dark-border rounded focus:outline-none focus:ring-1 focus:ring-brand-blue text-dark-text-primary placeholder-dark-text-secondary"
+                  className="w-full max-w-[100px] pl-2 pr-2 py-0.5 text-xs bg-transparent border border-gray-300 dark:border-dark-border rounded focus:outline-none focus:ring-1 focus:ring-brand-blue text-slate-900 dark:text-dark-text-primary placeholder-dark-text-secondary"
                 />
               </div>
               {/* 状态过滤 - 缩小版 */}
@@ -204,11 +204,11 @@ export function MobileLayout() {
                            option.value === 'blocked' ? 'text-red-500' :
                            option.value === 'done' ? 'text-green-500' :
                            'text-black')
-                        : 'text-dark-text-secondary'
+                        : 'text-slate-900 dark:text-dark-text-secondary'
                     }`}
                   >
                     <span className={`w-2 h-2 rounded-full flex-shrink-0 ${option.icon}`} />
-                    {option.label}
+                    <span className="text-slate-900 dark:text-dark-text-primary">{option.label}</span>
                   </button>
                 ))}
               </div>
