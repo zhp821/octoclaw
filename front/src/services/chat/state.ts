@@ -2,6 +2,11 @@ import type { Timestamp } from '../../utils/timestamp'
 
 const STORAGE_KEY = 'octoclaw_session_id'
 
+function getLocalStorage(): Storage | null {
+  if (typeof window === 'undefined') return null
+  return window.localStorage
+}
+
 export function generateGlobalSessionId(planId: string): string {
   return `global-${planId}`
 }
@@ -33,15 +38,25 @@ export function extractTaskId(sessionId: string): string | null {
 }
 
 export function storeSessionId(sessionId: string): void {
-  localStorage.setItem(STORAGE_KEY, sessionId)
+  const storage = getLocalStorage()
+  if (storage) {
+    storage.setItem(STORAGE_KEY, sessionId)
+  }
 }
 
 export function readStoredSessionId(): string | null {
-  return localStorage.getItem(STORAGE_KEY)
+  const storage = getLocalStorage()
+  if (storage) {
+    return storage.getItem(STORAGE_KEY)
+  }
+  return null
 }
 
 export function clearStoredSessionId(): void {
-  localStorage.removeItem(STORAGE_KEY)
+  const storage = getLocalStorage()
+  if (storage) {
+    storage.removeItem(STORAGE_KEY)
+  }
 }
 
 export function normalizeUnixTimestamp(timestamp: number): Timestamp {
