@@ -1,89 +1,192 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 import type { ChatMessage } from '@/types'
-import chatApi from '@/services/chatApi'
 
-interface ChatState {
-  messages: Record<string, ChatMessage[]>
-  rootMessages: ChatMessage[] // 根任务聊天消息（未选择任务时）
-  isLoading: boolean
-
-  sendMessage: (taskId: string | null, content: string) => Promise<void>
-  applyChanges: (taskId: string, messageId: string) => Promise<void>
-  clearHistory: (taskId: string | null) => void
+export interface SessionData {
+  id: string
+  planId?: string
+  taskId?: string
+  messages: ChatMessage[]
+  createdAt: number
 }
 
-export const useChatStore = create<ChatState>((set, get) => ({
-  messages: {},
-  rootMessages: [],
-  isLoading: false,
+export type ConnectionState = 
+  | 'disconnected'
+  | 'connecting'
+  | 'connected'
+  | 'error'
 
-  sendMessage: async (taskId: string | null, content: string) => {
-    const userMessage: ChatMessage = {
-      id: `msg-${Date.now()}`,
-      role: 'user',
-      content,
-      timestamp: Date.now(),
+interface ChatState {
+  sessions: Map<string, SessionData>
+  
+  planToSession: Map<string, string>
+  taskToSession: Map<string, string>
+  
+  currentSessionId: string | null
+  connectionState: ConnectionState
+  isTyping: boolean
+  
+  createSession: (type: 'global' | 'execution', id: string) => string
+  getOrCreateSession: (type: 'global' | 'execution', id: string) => SessionData
+  getSessionByPlanId: (planId: string) => SessionData | undefined
+  getSessionByTaskId: (taskId: string) => SessionData | undefined
+  addMessage: (sessionId: string, message: ChatMessage) => void
+  updateMessage: (sessionId: string, messageId: string, updates: Partial<ChatMessage>) => void
+  setConnectionState: (state: ConnectionState) => void
+  setTyping: (sessionId: string, isTyping: boolean) => void
+}
+
+const STORAGE_KEY = 'octoclaw-chat-sessions'
+
+function serializeSessions(sessions: Map<string, SessionData>): string {
+  return JSON.stringify(Array.from(sessions.entries()))
+}
+
+function deserializeSessions(data: string): Map<string, SessionData> {
+  try {
+    const entries = JSON.parse(data)
+    return new Map(entries)
+  } catch {
+    return new Map()
+  }
+}
+
+const savedData = localStorage.getItem(STORAGE_KEY)
+const initialSessions = savedData ? deserializeSessions(savedData) : new Map()
+
+export const useChatStore = create<ChatState>()(
+  persist(
+    (set, get) => ({
+      sessions: initialSessions,
+      planToSession: new Map(),
+      taskToSession: new Map(),
+      currentSessionId: null,
+      connectionState: 'disconnected',
+      isTyping: false,
+      
+      createSession: (type, id) => {
+        const sessionId = type === 'global' 
+          ? `global-${id}` 
+          : `octo:exec:${id}`
+        
+        const session: SessionData = {
+          id: sessionId,
+          planId: type === 'global' ? id : undefined,
+          taskId: type === 'execution' ? id : undefined,
+          messages: [],
+          createdAt: Date.now(),
+        }
+        
+        set((state) => {
+          const newSessions = new Map(state.sessions)
+          newSessions.set(sessionId, session)
+          
+          const newPlanMap = new Map(state.planToSession)
+          const newTaskMap = new Map(state.taskToSession)
+          
+          if (type === 'global') {
+            newPlanMap.set(id, sessionId)
+          } else {
+            newTaskMap.set(id, sessionId)
+          }
+          
+          localStorage.setItem(STORAGE_KEY, serializeSessions(newSessions))
+          
+          return {
+            sessions: newSessions,
+            planToSession: newPlanMap,
+            taskToSession: newTaskMap,
+          }
+        })
+        
+        return sessionId
+      },
+      
+      getOrCreateSession: (type, id) => {
+        const existing = type === 'global'
+          ? get().getSessionByPlanId(id)
+          : get().getSessionByTaskId(id)
+        
+        if (existing) return existing
+        
+        const sessionId = get().createSession(type, id)
+        return get().sessions.get(sessionId)!
+      },
+      
+      getSessionByPlanId: (planId) => {
+        const sessionId = get().planToSession.get(planId)
+        return sessionId ? get().sessions.get(sessionId) : undefined
+      },
+      
+      getSessionByTaskId: (taskId) => {
+        const sessionId = get().taskToSession.get(taskId)
+        return sessionId ? get().sessions.get(sessionId) : undefined
+      },
+      
+      addMessage: (sessionId, message) => {
+        set((state) => {
+          const newSessions = new Map(state.sessions)
+          const existingSession = state.sessions.get(sessionId)
+          
+          if (existingSession) {
+            newSessions.set(sessionId, {
+              ...existingSession,
+              messages: [...existingSession.messages, message],
+            })
+          } else {
+            newSessions.set(sessionId, {
+              id: sessionId,
+              messages: [message],
+              createdAt: Date.now(),
+            })
+          }
+          
+          localStorage.setItem(STORAGE_KEY, serializeSessions(newSessions))
+          
+          return { sessions: newSessions }
+        })
+      },
+      
+      updateMessage: (sessionId, messageId, updates) => {
+        set((state) => {
+          const session = state.sessions.get(sessionId)
+          if (!session) return state
+          
+          const newSessions = new Map(state.sessions)
+          newSessions.set(sessionId, {
+            ...session,
+            messages: session.messages.map(m =>
+              m.id === messageId ? { ...m, ...updates } : m
+            ),
+          })
+          
+          localStorage.setItem(STORAGE_KEY, serializeSessions(newSessions))
+          
+          return { sessions: newSessions }
+        })
+      },
+      
+      setConnectionState: (state) => {
+        set({ connectionState: state })
+      },
+      
+      setTyping: (sessionId, isTyping) => {
+        set({ isTyping })
+      },
+    }),
+    {
+      name: STORAGE_KEY,
+      partialize: (state) => ({ sessions: Array.from(state.sessions.entries()) }),
+      merge: (persisted, current) => {
+        const persistedState = persisted as { sessions?: [string, SessionData][] }
+        if (persistedState?.sessions) {
+          return {
+            ...current,
+            sessions: new Map(persistedState.sessions),
+          }
+        }
+        return current
+      },
     }
-
-    if (!taskId) {
-      // 未选择任务，发送到根任务聊天
-      set(state => ({
-        rootMessages: [...state.rootMessages, userMessage],
-        isLoading: true,
-      }))
-
-      try {
-        const response = await chatApi.sendMessage('root', content)
-        set(state => ({
-          rootMessages: [...state.rootMessages, response.message],
-          isLoading: false,
-        }))
-      } catch (error) {
-        console.error('Failed to send message:', error)
-        set({ isLoading: false })
-      }
-    } else {
-      // 发送到选定任务聊天
-      set(state => ({
-        messages: {
-          ...state.messages,
-          [taskId]: [...(state.messages[taskId] || []), userMessage],
-        },
-        isLoading: true,
-      }))
-
-      try {
-        const response = await chatApi.sendMessage(taskId, content)
-        set(state => ({
-          messages: {
-            ...state.messages,
-            [taskId]: [...(state.messages[taskId] || []), response.message],
-          },
-          isLoading: false,
-        }))
-      } catch (error) {
-        console.error('Failed to send message:', error)
-        set({ isLoading: false })
-      }
-    }
-  },
-
-  applyChanges: async (taskId: string, messageId: string) => {
-    const { messages } = get()
-    const message = messages[taskId]?.find(m => m.id === messageId)
-    if (!message?.pendingChanges) return
-    console.log('Applying changes:', message.pendingChanges)
-  },
-
-  clearHistory: (taskId: string | null) => {
-    if (!taskId) {
-      set({ rootMessages: [] })
-    } else {
-      set(state => {
-        const newMessages = { ...state.messages }
-        delete newMessages[taskId]
-        return { messages: newMessages }
-      })
-    }
-  },
-}))
+  )
+)

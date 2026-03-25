@@ -4,9 +4,10 @@ import { TaskDetail } from '@/components/TaskDetail/TaskDetail'
 import { ChatPanel } from '@/components/Chat/ChatPanel'
 import { NewTaskForm } from '@/components/TaskDetail/NewTaskForm'
 import { useTaskStore } from '@/stores/taskStore'
-import { ChevronLeft, MessageCircle, Plus, X } from 'lucide-react'
+import { ChevronLeft, Plus, X } from 'lucide-react'
 import type { TaskNode, TaskStatus } from '@/types'
 import { STATUS_CONFIG } from '@/config/status'
+import { OctoClawLogo } from './Header'
 
 export function MobileLayout() {
   const [view, setView] = useState<'list' | 'detail' | 'chat'>('list')
@@ -162,22 +163,7 @@ export function MobileLayout() {
             </button>
           )}
           <div className="flex items-center gap-1 min-w-0">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" className="w-5 h-5 flex-shrink-0">
-              <defs>
-                <linearGradient id="mobileLogoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#6366f1" />
-                  <stop offset="100%" stopColor="#8b5cf6" />
-                </linearGradient>
-              </defs>
-              <ellipse cx="50" cy="45" rx="30" ry="25" fill="url(#mobileLogoGradient)"/>
-              <ellipse cx="40" cy="40" rx="8" ry="10" fill="white"/>
-              <ellipse cx="60" cy="40" rx="8" ry="10" fill="white"/>
-              <circle cx="42" cy="42" r="4" fill="#1e293b"/>
-              <circle cx="62" cy="42" r="4" fill="#1e293b"/>
-              <circle cx="44" cy="40" r="1.5" fill="white"/>
-              <circle cx="64" cy="40" r="1.5" fill="white"/>
-              <path d="M 42 52 Q 50 58 58 52" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round"/>
-            </svg>
+            <OctoClawLogo className="w-5 h-5 flex-shrink-0" />
             <h1 className="font-bold text-sm text-slate-900 dark:text-dark-text-primary whitespace-nowrap">OctoClaw</h1>
           </div>
           {view === 'list' && (
@@ -188,7 +174,7 @@ export function MobileLayout() {
                   placeholder="搜索..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full max-w-[100px] pl-2 pr-2 py-0.5 text-xs bg-transparent border border-gray-300 dark:border-dark-border rounded focus:outline-none focus:ring-1 focus:ring-brand-blue text-slate-900 dark:text-dark-text-primary placeholder-dark-text-secondary"
+                  className="w-full max-w-[100px] pl-2 pr-2 py-0.5 text-xs bg-white dark:bg-transparent border border-gray-300 dark:border-dark-border rounded focus:outline-none focus:ring-1 focus:ring-brand-blue text-slate-900 dark:text-dark-text-primary placeholder-gray-400 dark:placeholder-dark-text-secondary"
                 />
               </div>
               {/* 状态过滤 - 缩小版 */}
@@ -199,16 +185,16 @@ export function MobileLayout() {
                     onClick={() => setStatusFilter(statusFilter === option.value ? null : option.value)}
                     className={`px-1.5 py-0.5 text-[10px] rounded whitespace-nowrap flex items-center gap-0.5 ${
                       statusFilter === option.value
-                        ? 'font-medium ' + (option.value === 'todo' ? 'text-gray-600' :
+                        ? 'font-medium bg-gray-100 dark:bg-dark-border ' + (option.value === 'todo' ? 'text-gray-600' :
                            option.value === 'in-progress' ? 'text-blue-500' :
                            option.value === 'blocked' ? 'text-red-500' :
                            option.value === 'done' ? 'text-green-500' :
-                           'text-black')
-                        : 'text-slate-900 dark:text-dark-text-secondary'
+                           'text-gray-600')
+                        : 'text-slate-600 dark:text-dark-text-secondary'
                     }`}
                   >
                     <span className={`w-2 h-2 rounded-full flex-shrink-0 ${option.icon}`} />
-                    <span className="text-slate-900 dark:text-dark-text-primary">{option.label}</span>
+                    <span>{option.label}</span>
                   </button>
                 ))}
               </div>
@@ -231,7 +217,7 @@ export function MobileLayout() {
               className="p-1.5 hover:bg-purple-50 dark:hover:bg-brand-purple/10 rounded"
               title="AI 助手"
             >
-              <MessageCircle size={20} className="text-purple-600 dark:text-brand-purple" />
+              <OctoClawLogo className="w-5 h-5" />
             </button>
           )}
         </div>
@@ -241,7 +227,7 @@ export function MobileLayout() {
       <div className="flex-1 overflow-hidden relative">
         {/* 根任务列表视图 */}
         {view === 'list' && (
-          <div className="h-full overflow-y-auto">
+          <div className="h-full overflow-y-auto bg-white dark:bg-dark-bg-primary">
             {filteredRoots.map(root => (
               <RootTaskGrid
                 key={root.id}
@@ -250,7 +236,7 @@ export function MobileLayout() {
               />
             ))}
             {filteredRoots.length === 0 && (
-              <div className="text-center py-8 text-dark-text-secondary text-sm">
+              <div className="text-center py-8 text-gray-400 dark:text-dark-text-secondary text-sm">
                 {searchQuery.trim() || statusFilter ? '未找到匹配的任务' : '暂无任务'}
               </div>
             )}
@@ -261,11 +247,11 @@ export function MobileLayout() {
         {view === 'detail' && (
           <div 
             ref={detailContainerRef}
-            className="h-full overflow-y-auto"
+            className="h-full overflow-y-auto bg-white dark:bg-dark-bg-primary"
           >
             <TaskDetail />
             {/* 提示 */}
-            <div className="p-4 text-center text-dark-text-secondary text-xs">
+            <div className="p-4 text-center text-gray-400 dark:text-dark-text-secondary text-xs">
               ← 左滑下一个任务 &nbsp;|&nbsp; 右滑上一个任务 →
             </div>
           </div>
@@ -286,7 +272,7 @@ export function MobileLayout() {
             onClick={handleOpenChat}
             className="flex-1 flex items-center justify-center gap-2 p-2 bg-purple-50 dark:bg-brand-purple/10 text-purple-600 dark:text-brand-purple rounded"
           >
-            <MessageCircle size={16} />
+            <OctoClawLogo className="w-5 h-5" />
             <span className="text-sm font-medium">AI 助手</span>
           </button>
         </div>
@@ -316,7 +302,7 @@ export function MobileLayout() {
             {/* 聊天头部 */}
             <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-dark-border">
               <div className="flex items-center gap-2">
-                <MessageCircle size={16} className="text-purple-600 dark:text-brand-purple" />
+                <OctoClawLogo className="w-5 h-5" />
                 <span className="font-bold text-sm text-slate-900 dark:text-dark-text-primary">AI 助手</span>
               </div>
               <button

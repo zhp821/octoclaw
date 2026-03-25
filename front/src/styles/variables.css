@@ -49,6 +49,11 @@ body {
   color: var(--text-primary);
 }
 
+::placeholder {
+  color: var(--text-secondary);
+  opacity: 1;
+}
+
 code {
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
 }

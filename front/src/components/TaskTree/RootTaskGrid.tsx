@@ -57,12 +57,12 @@ export function RootTaskGrid({ onCreateTask, onViewDetail }: Props) {
               e.stopPropagation()
               toggleExpand(task.id)
             }}
-            className="p-0.5 hover:bg-dark-border rounded"
+            className="p-0.5 hover:bg-gray-200 dark:hover:bg-dark-border rounded"
           >
             {isExpanded ? (
-              <ChevronDown size={14} className="text-dark-text-secondary opacity-60" />
+              <ChevronDown size={14} className="text-gray-400 dark:text-dark-text-secondary opacity-60" />
             ) : (
-              <ChevronRight size={14} className="text-dark-text-secondary opacity-60" />
+              <ChevronRight size={14} className="text-gray-400 dark:text-dark-text-secondary opacity-60" />
             )}
           </button>
         )}
@@ -79,9 +79,12 @@ export function RootTaskGrid({ onCreateTask, onViewDetail }: Props) {
             }
           }}
         >
-          <div className="font-medium text-sm">{task.title}</div>
+          <div className="font-medium text-sm text-slate-900 dark:text-dark-text-primary">
+            {task.numbering && <span className="text-gray-500 dark:text-dark-text-secondary mr-1">{task.numbering}</span>}
+            {task.title}
+          </div>
           {depth === 0 && (
-            <div className="text-xs text-dark-text-secondary mt-0.5">
+            <div className="text-xs text-gray-500 dark:text-dark-text-secondary mt-0.5">
               {task.children.length} 个子任务
             </div>
           )}
@@ -136,7 +139,7 @@ export function RootTaskGrid({ onCreateTask, onViewDetail }: Props) {
 
     return (
       <div key={task.id}>
-        <div className={`border-b border-dark-border/30 ${depth === 0 ? '' : 'bg-dark-secondary'}`}>
+        <div className={`border-b border-gray-200 dark:border-dark-border/30 ${depth === 0 ? '' : 'bg-gray-50 dark:bg-dark-secondary'}`}>
           {taskContent}
         </div>
         {isExpanded && hasChildren && (
@@ -154,7 +157,7 @@ export function RootTaskGrid({ onCreateTask, onViewDetail }: Props) {
         {roots.map(root => (
           <div
             key={root.id}
-            className="bg-dark-secondary rounded-lg border border-dark-border overflow-hidden"
+            className="bg-gray-100 dark:bg-dark-secondary rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden"
           >
             {/* 根任务行 */}
             <div
@@ -164,16 +167,16 @@ export function RootTaskGrid({ onCreateTask, onViewDetail }: Props) {
               {/* 展开/收起箭头 */}
               <span className="w-4 flex-shrink-0">
                 {expandedRootId === root.id ? (
-                  <ChevronDown size={14} className="text-dark-text-secondary opacity-60" />
+                  <ChevronDown size={14} className="text-gray-400 dark:text-dark-text-secondary opacity-60" />
                 ) : (
-                  <ChevronRight size={14} className="text-dark-text-secondary opacity-60" />
+                  <ChevronRight size={14} className="text-gray-400 dark:text-dark-text-secondary opacity-60" />
                 )}
               </span>
 
               {/* 任务标题 */}
               <div className="flex-1">
-                <div className="font-bold text-sm">{root.title}</div>
-                <div className="text-xs text-dark-text-secondary mt-0.5">
+                <div className="font-bold text-sm text-slate-900 dark:text-dark-text-primary">{root.title}</div>
+                <div className="text-xs text-gray-500 dark:text-dark-text-secondary mt-0.5">
                   {root.children.length} 个子任务
                 </div>
               </div>
@@ -235,7 +238,7 @@ export function RootTaskGrid({ onCreateTask, onViewDetail }: Props) {
       </div>
 
       {roots.length === 0 && (
-        <div className="text-center py-8 text-dark-text-secondary text-sm">
+        <div className="text-center py-8 text-gray-400 dark:text-dark-text-secondary text-sm">
           暂无任务
         </div>
       )}

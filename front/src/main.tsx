@@ -4,8 +4,17 @@ import App from './App'
 import './styles/variables.css'
 import './styles/index.css'
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-)
+async function init() {
+  if (import.meta.env.DEV) {
+    const { startMockWorker } = await import('./services/mock/browser')
+    await startMockWorker()
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>,
+  )
+}
+
+init()
