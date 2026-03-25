@@ -4,8 +4,10 @@ import { QualityGate } from './QualityGate'
 import { TaskDependencies } from './TaskDependencies'
 import { Badge } from '@/components/shared/Badge'
 import { NewTaskForm } from './NewTaskForm'
+import { useNavigate } from 'react-router-dom'
 
 export function TaskDetail() {
+  const navigate = useNavigate()
   const { selectedId, roots, isCreatingTask, creatingParentId, cancelCreateTask } = useTaskStore()
 
   if (isCreatingTask) {
@@ -65,6 +67,18 @@ export function TaskDetail() {
           {task.description}
         </div>
       </div>
+
+      {task.executionSessionId && (
+        <div className="mb-3">
+          <button
+            onClick={() => navigate(`/execution/${task.id}`)}
+            className="w-full p-2 rounded text-sm font-medium transition-colors"
+            style={{ backgroundColor: 'var(--brand-purple)', color: 'white' }}
+          >
+            💬 执行会话
+          </button>
+        </div>
+      )}
 
       {task.assignee && (
         <div className="mb-3">

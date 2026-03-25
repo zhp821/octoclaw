@@ -46,7 +46,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   createSession: (type, id) => {
     const sessionId = type === 'global' 
       ? `global-${id}` 
-      : `octo:exec-${id}`
+      : `octo:exec:${id}`
     
     const session: SessionData = {
       id: sessionId,

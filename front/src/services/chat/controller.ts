@@ -120,7 +120,7 @@ function connectWebSocket(sessionId: string): void {
       return
     }
 
-    handleConnectionError(new Error('WebSocket error'))
+    scheduleReconnect(sessionId)
   }
 }
 
