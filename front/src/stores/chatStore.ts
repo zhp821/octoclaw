@@ -1,7 +1,5 @@
 import { create } from 'zustand'
 import type { ChatMessage } from '@/types'
-import { formatTimestamp } from '@/utils/timestamp'
-import chatApi from '@/services/chatApi'
 
 export interface SessionData {
   id: string
@@ -9,181 +7,136 @@ export interface SessionData {
   taskId?: string
   messages: ChatMessage[]
   createdAt: number
-  isActive: boolean
 }
 
+export type ConnectionState = 
+  | 'disconnected'
+  | 'connecting'
+  | 'connected'
+  | 'error'
+
 interface ChatState {
-  connectionState: 'disconnected' | 'connecting' | 'connected' | 'error'
+  sessions: Map<string, SessionData>
+  
+  planToSession: Map<string, string>
+  taskToSession: Map<string, string>
+  
   currentSessionId: string | null
+  connectionState: ConnectionState
   isTyping: boolean
   
-  globalSessions: Record<string, SessionData>
-  executionSessions: Record<string, SessionData>
-  
-  setConnectionState: (state: 'disconnected' | 'connecting' | 'connected' | 'error') => void
-  setCurrentSessionId: (sessionId: string | null) => void
-  setTyping: (sessionId: string, isTyping: boolean) => void
+  createSession: (type: 'global' | 'execution', id: string) => string
+  getOrCreateSession: (type: 'global' | 'execution', id: string) => SessionData
+  getSessionByPlanId: (planId: string) => SessionData | undefined
+  getSessionByTaskId: (taskId: string) => SessionData | undefined
   addMessage: (sessionId: string, message: ChatMessage) => void
   updateMessage: (sessionId: string, messageId: string, updates: Partial<ChatMessage>) => void
-  clearMessages: (sessionId: string) => void
-  getGlobalSession: (planId: string) => SessionData | undefined
-  getExecutionSession: (taskId: string) => SessionData | undefined
-  initGlobalSession: (planId: string) => SessionData
-  initExecutionSession: (taskId: string) => SessionData
+  setConnectionState: (state: ConnectionState) => void
+  setTyping: (sessionId: string, isTyping: boolean) => void
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
-  connectionState: 'disconnected',
+  sessions: new Map(),
+  planToSession: new Map(),
+  taskToSession: new Map(),
   currentSessionId: null,
+  connectionState: 'disconnected',
   isTyping: false,
   
-  globalSessions: {},
-  executionSessions: {},
-
+  createSession: (type, id) => {
+    const sessionId = type === 'global' 
+      ? `global-${id}` 
+      : `octo:exec-${id}`
+    
+    const session: SessionData = {
+      id: sessionId,
+      planId: type === 'global' ? id : undefined,
+      taskId: type === 'execution' ? id : undefined,
+      messages: [],
+      createdAt: Date.now(),
+    }
+    
+    set((state) => {
+      const newSessions = new Map(state.sessions)
+      newSessions.set(sessionId, session)
+      
+      const newPlanMap = new Map(state.planToSession)
+      const newTaskMap = new Map(state.taskToSession)
+      
+      if (type === 'global') {
+        newPlanMap.set(id, sessionId)
+      } else {
+        newTaskMap.set(id, sessionId)
+      }
+      
+      return {
+        sessions: newSessions,
+        planToSession: newPlanMap,
+        taskToSession: newTaskMap,
+      }
+    })
+    
+    return sessionId
+  },
+  
+  getOrCreateSession: (type, id) => {
+    const existing = type === 'global'
+      ? get().getSessionByPlanId(id)
+      : get().getSessionByTaskId(id)
+    
+    if (existing) return existing
+    
+    const sessionId = get().createSession(type, id)
+    return get().sessions.get(sessionId)!
+  },
+  
+  getSessionByPlanId: (planId) => {
+    const sessionId = get().planToSession.get(planId)
+    return sessionId ? get().sessions.get(sessionId) : undefined
+  },
+  
+  getSessionByTaskId: (taskId) => {
+    const sessionId = get().taskToSession.get(taskId)
+    return sessionId ? get().sessions.get(sessionId) : undefined
+  },
+  
+  addMessage: (sessionId, message) => {
+    set((state) => {
+      const session = state.sessions.get(sessionId)
+      if (!session) return state
+      
+      const newSessions = new Map(state.sessions)
+      newSessions.set(sessionId, {
+        ...session,
+        messages: [...session.messages, message],
+      })
+      
+      return { sessions: newSessions }
+    })
+  },
+  
+  updateMessage: (sessionId, messageId, updates) => {
+    set((state) => {
+      const session = state.sessions.get(sessionId)
+      if (!session) return state
+      
+      const newSessions = new Map(state.sessions)
+      newSessions.set(sessionId, {
+        ...session,
+        messages: session.messages.map(m =>
+          m.id === messageId ? { ...m, ...updates } : m
+        ),
+      })
+      
+      return { sessions: newSessions }
+    })
+  },
+  
   setConnectionState: (state) => {
     set({ connectionState: state })
   },
-
-  setCurrentSessionId: (sessionId) => {
-    set({ currentSessionId: sessionId })
-  },
-
+  
   setTyping: (sessionId, isTyping) => {
-    set((state) => {
-      const session = state.globalSessions[sessionId] || state.executionSessions[sessionId]
-      if (!session) return state
-      
-      const isGlobal = sessionId.startsWith('global-')
-      const sessionsKey = isGlobal ? 'globalSessions' : 'executionSessions'
-      
-      return {
-        isTyping,
-        [sessionsKey]: {
-          ...state[sessionsKey as 'globalSessions' | 'executionSessions'],
-          [sessionId]: { ...session, isActive: isTyping },
-        },
-      }
-    })
-  },
-
-  addMessage: (sessionId, message) => {
-    set((state) => {
-      const session = state.globalSessions[sessionId] || state.executionSessions[sessionId]
-      if (!session) {
-        return state
-      }
-      
-      const isGlobal = sessionId.startsWith('global-')
-      const sessionsKey = isGlobal ? 'globalSessions' : 'executionSessions'
-      
-      return {
-        [sessionsKey]: {
-          ...state[sessionsKey as 'globalSessions' | 'executionSessions'],
-          [sessionId]: {
-            ...session,
-            messages: [...session.messages, message],
-          },
-        },
-      }
-    })
-  },
-
-  updateMessage: (sessionId, messageId, updates) => {
-    set((state) => {
-      const session = state.globalSessions[sessionId] || state.executionSessions[sessionId]
-      if (!session) return state
-      
-      const isGlobal = sessionId.startsWith('global-')
-      const sessionsKey = isGlobal ? 'globalSessions' : 'executionSessions'
-      
-      return {
-        [sessionsKey]: {
-          ...state[sessionsKey as 'globalSessions' | 'executionSessions'],
-          [sessionId]: {
-            ...session,
-            messages: session.messages.map(m =>
-              m.id === messageId ? { ...m, ...updates } : m
-            ),
-          },
-        },
-      }
-    })
-  },
-
-  clearMessages: (sessionId) => {
-    set((state) => {
-      const session = state.globalSessions[sessionId] || state.executionSessions[sessionId]
-      if (!session) return state
-      
-      const isGlobal = sessionId.startsWith('global-')
-      const sessionsKey = isGlobal ? 'globalSessions' : 'executionSessions'
-      
-      return {
-        [sessionsKey]: {
-          ...state[sessionsKey as 'globalSessions' | 'executionSessions'],
-          [sessionId]: { ...session, messages: [] },
-        },
-      }
-    })
-  },
-
-  getGlobalSession: (planId) => {
-    const sessionId = `global-${planId}`
-    return get().globalSessions[sessionId]
-  },
-
-  getExecutionSession: (taskId) => {
-    const sessionId = `exec-${taskId}`
-    return get().executionSessions[sessionId]
-  },
-
-  initGlobalSession: (planId) => {
-    const sessionId = `global-${planId}`
-    const existing = get().globalSessions[sessionId]
-    if (existing) {
-      return existing
-    }
-    
-    const newSession: SessionData = {
-      id: sessionId,
-      planId,
-      messages: [],
-      createdAt: Date.now(),
-      isActive: false,
-    }
-    
-    set((state) => ({
-      globalSessions: {
-        ...state.globalSessions,
-        [sessionId]: newSession,
-      },
-    }))
-    
-    return newSession
-  },
-
-  initExecutionSession: (taskId) => {
-    const sessionId = `exec-${taskId}`
-    const existing = get().executionSessions[sessionId]
-    if (existing) {
-      return existing
-    }
-    
-    const newSession: SessionData = {
-      id: sessionId,
-      taskId,
-      messages: [],
-      createdAt: Date.now(),
-      isActive: false,
-    }
-    
-    set((state) => ({
-      executionSessions: {
-        ...state.executionSessions,
-        [sessionId]: newSession,
-      },
-    }))
-    
-    return newSession
+    set({ isTyping })
   },
 }))
