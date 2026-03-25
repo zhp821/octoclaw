@@ -54,9 +54,25 @@ export interface TaskNode {
   chatHistory: ChatMessage[];
   isDecomposing?: boolean;
   requiresReview: boolean;
+  
+  agentId?: string;
+  
   executionSessionId?: string;
   executionAgentId?: string;
   executionMessages?: ChatMessage[];
+  executionRetryCount?: number;
+}
+
+export interface PlanData {
+  id: string;
+  title: string;
+  status: TaskStatus;
+  order?: number;
+  
+  globalSessionId?: string;
+  globalMessages?: ChatMessage[];
+  
+  children: TaskNode[];
 }
 
 export interface ProjectData {
