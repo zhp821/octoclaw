@@ -42,7 +42,7 @@ function SortableTask({ task, depth, onCreateSubtask, visitedIds = new Set() }: 
     }
   }
 
-  return (
+return (
     <div ref={setNodeRef} style={style} className="relative">
       <div
         className={`group flex items-center gap-1 p-1.5 rounded transition-colors cursor-pointer ${isSelected ? 'bg-brand-blue/20' : 'hover:bg-dark-border/50'}`}
