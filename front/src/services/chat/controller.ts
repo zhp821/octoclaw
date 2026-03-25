@@ -10,6 +10,21 @@ import {
 import type { PicoMessage } from './protocol'
 import { handlePicoMessage } from './protocol'
 import { useChatStore } from '../../stores/chatStore'
+import { formatTimestamp } from '../../utils/timestamp'
+
+interface PicoTokenResponse {
+  token: string
+  ws_url: string
+  enabled: boolean
+}
+
+async function getPicoToken(): Promise<PicoTokenResponse> {
+  const res = await fetch('/api/pico/token')
+  if (!res.ok) {
+    throw new Error(`Failed to get pico token: ${res.status}`)
+  }
+  return res.json()
+}
 
 interface ConnectionState {
   connected: boolean
@@ -57,69 +72,84 @@ function handleConnectionError(error: Error): void {
   useChatStore.getState().setTyping(state.sessionId ?? 'root', false)
 }
 
-function connectWebSocket(sessionId: string): void {
+async function connectWebSocket(sessionId: string): Promise<void> {
   if (state.connecting) {
     return
   }
 
-  const wsUrl = `ws://localhost:18800/chat/${sessionId}`
-  const normalizedUrl = normalizeWsUrlForBrowser(wsUrl)
-
   state.connecting = true
 
-  const socket = new WebSocket(normalizedUrl)
-  const generation = getCurrentGeneration() + 1
-  setCurrentSocket(socket, generation, sessionId)
-
-  socket.onopen = () => {
-    if (!isCurrentSocket(socket, generation, sessionId)) {
-      socket.close()
-      return
-    }
-
-    state.connected = true
-    state.connecting = false
-    state.reconnectAttempts = 0
-
-    console.log('WebSocket connected')
-
-    processMessageQueue()
-  }
-
-  socket.onmessage = (event) => {
-    if (!isCurrentSocket(socket, generation, sessionId)) {
-      return
-    }
-
-    try {
-      const message: PicoMessage = JSON.parse(event.data)
-      handlePicoMessage(message, sessionId)
-    } catch (error) {
-      console.error('Failed to parse message:', error)
-    }
-  }
-
-  socket.onclose = () => {
-    if (!isCurrentSocket(socket, generation, sessionId)) {
-      return
-    }
-
-    state.connected = false
-    state.connecting = false
-    useChatStore.getState().setTyping(sessionId, false)
-
-    if (state.reconnectAttempts < state.maxReconnectAttempts) {
+  try {
+    const { token, ws_url } = await getPicoToken()
+    
+    if (!token) {
+      console.error('No pico token available')
+      state.connecting = false
       scheduleReconnect(sessionId)
-    } else {
-      console.warn('Max reconnection attempts reached')
-    }
-  }
-
-  socket.onerror = (error) => {
-    if (!isCurrentSocket(socket, generation, sessionId)) {
       return
     }
 
+    const normalizedUrl = normalizeWsUrlForBrowser(ws_url)
+    const url = `${normalizedUrl}?session_id=${encodeURIComponent(sessionId)}`
+    const socket = new WebSocket(url, [`token.${token}`])
+    const generation = getCurrentGeneration() + 1
+    setCurrentSocket(socket, generation, sessionId)
+
+    socket.onopen = () => {
+      if (!isCurrentSocket(socket, generation, sessionId)) {
+        socket.close()
+        return
+      }
+
+      state.connected = true
+      state.connecting = false
+      state.reconnectAttempts = 0
+
+      console.log('WebSocket connected')
+
+      processMessageQueue()
+    }
+
+    socket.onmessage = (event) => {
+      if (!isCurrentSocket(socket, generation, sessionId)) {
+        return
+      }
+
+      try {
+        const message: PicoMessage = JSON.parse(event.data)
+        handlePicoMessage(message, sessionId)
+      } catch (error) {
+        console.error('Failed to parse message:', error)
+      }
+    }
+
+    socket.onclose = () => {
+      if (!isCurrentSocket(socket, generation, sessionId)) {
+        return
+      }
+
+      state.connected = false
+      state.connecting = false
+      useChatStore.getState().setTyping(sessionId, false)
+
+      if (state.reconnectAttempts < state.maxReconnectAttempts) {
+        scheduleReconnect(sessionId)
+      } else {
+        console.warn('Max reconnection attempts reached')
+      }
+    }
+
+    socket.onerror = (error) => {
+      if (!isCurrentSocket(socket, generation, sessionId)) {
+        return
+      }
+
+      state.connecting = false
+      scheduleReconnect(sessionId)
+    }
+  } catch (error) {
+    console.error('Failed to connect to pico:', error)
+    state.connecting = false
     scheduleReconnect(sessionId)
   }
 }
@@ -185,17 +215,26 @@ export function sendMessage(content: string): void {
   }
 
   const timestamp = Date.now()
-  const message = { content, timestamp }
+  const sessionId = state.sessionId
+
+  if (sessionId) {
+    useChatStore.getState().addMessage(sessionId, {
+      id: `msg-user-${timestamp}`,
+      role: 'user',
+      content,
+      timestamp: formatTimestamp(),
+    })
+  }
 
   if (state.connected && getCurrentSocket()) {
     getCurrentSocket()!.send(JSON.stringify({
       type: 'message.send',
-      session_id: state.sessionId,
+      session_id: sessionId,
       payload: { content },
       timestamp,
     }))
   } else {
-    messageQueue.push(message)
+    messageQueue.push({ content, timestamp })
   }
 }
 

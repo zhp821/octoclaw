@@ -8,14 +8,14 @@ import { useTaskStore } from '@/stores/taskStore'
 
 const MIN_SIDEBAR_WIDTH = 200
 const MAX_SIDEBAR_WIDTH = 500
-const MIN_CHAT_WIDTH = 280
+const MIN_CHAT_WIDTH = 320
 const MOBILE_BREAKPOINT = 768
 
 export function DesktopLayout() {
   const { fetchTasks } = useTaskStore()
   const containerRef = useRef<HTMLDivElement>(null)
   const [sidebarWidth, setSidebarWidth] = useState(280)
-  const [chatWidth, setChatWidth] = useState(320)
+  const [chatWidth, setChatWidth] = useState(380)
   const [isResizingSidebar, setIsResizingSidebar] = useState(false)
   const [isResizingChat, setIsResizingChat] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -43,7 +43,7 @@ export function DesktopLayout() {
       const containerWidth = containerRef.current?.clientWidth || window.innerWidth
       if (containerWidth > 0) {
         const defaultSidebar = Math.max(MIN_SIDEBAR_WIDTH, Math.min(MAX_SIDEBAR_WIDTH, containerWidth * 0.2))
-        const defaultChat = Math.max(MIN_CHAT_WIDTH, containerWidth * 0.25)
+        const defaultChat = Math.max(MIN_CHAT_WIDTH, containerWidth * 0.29)
         setSidebarWidth(prev => prev || defaultSidebar)
         setChatWidth(prev => prev || defaultChat)
       }
@@ -63,7 +63,7 @@ export function DesktopLayout() {
       } else if (isResizingChat) {
         const containerRect = containerRef.current.getBoundingClientRect()
         const newWidth = containerRect.right - e.clientX
-        setChatWidth(Math.max(MIN_CHAT_WIDTH, Math.min(containerRect.width * 0.4, newWidth)))
+        setChatWidth(Math.max(MIN_CHAT_WIDTH, Math.min(containerRect.width * 0.45, newWidth)))
       }
     }
 

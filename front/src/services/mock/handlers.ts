@@ -69,6 +69,7 @@ export const handlers = [
       status: 'todo',
       level: parentTask.level + 1,
       numbering: `${parentTask.numbering}.${parentTask.children.length + 1}`,
+      order: (parentTask.children.length + 1) * 1000,
       dependencies: [],
       children: [],
       assignee: parentTask.assignee,

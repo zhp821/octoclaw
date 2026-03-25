@@ -5,7 +5,7 @@ import './styles/variables.css'
 import './styles/index.css'
 
 async function init() {
-  if ((import.meta as any).env.DEV) {
+  if (import.meta.env.DEV) {
     const { startMockWorker } = await import('./services/mock/browser')
     await startMockWorker()
   }

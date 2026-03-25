@@ -9,7 +9,7 @@ export async function startMockWorker() {
       onUnhandledRequest: 'warn',
       quiet: false,
       serviceWorker: {
-        url: '/mockServiceWorker.js',
+        url: './mockServiceWorker.js',
       },
     })
     console.log('[MSW] Mock Service Worker started')

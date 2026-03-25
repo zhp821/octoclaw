@@ -4,10 +4,8 @@ import { QualityGate } from './QualityGate'
 import { TaskDependencies } from './TaskDependencies'
 import { Badge } from '@/components/shared/Badge'
 import { NewTaskForm } from './NewTaskForm'
-import { useNavigate } from 'react-router-dom'
 
 export function TaskDetail() {
-  const navigate = useNavigate()
   const { selectedId, roots, isCreatingTask, creatingParentId, cancelCreateTask } = useTaskStore()
 
   if (isCreatingTask) {
@@ -18,19 +16,21 @@ export function TaskDetail() {
     )
   }
 
-  function findTask(id: string): any {
+  function findTask(id: string, visited: Set<string> = new Set()): any {
     for (const t of roots) {
       if (t.id === id) return t
-      const found = findTaskInChildren(t.children, id)
+      const found = findTaskInChildren(t.children, id, visited)
       if (found) return found
     }
     return null
   }
 
-  function findTaskInChildren(tasks: typeof roots, id: string): any {
+  function findTaskInChildren(tasks: typeof roots, id: string, visited: Set<string>): any {
     for (const task of tasks) {
+      if (visited.has(task.id)) continue
+      visited.add(task.id)
       if (task.id === id) return task
-      const found = findTaskInChildren(task.children, id)
+      const found = findTaskInChildren(task.children, id, visited)
       if (found) return found
     }
     return null
@@ -49,11 +49,13 @@ export function TaskDetail() {
   return (
     <div className="p-3 overflow-y-auto h-full" style={{ color: 'var(--text-primary)' }}>
       <div className="flex items-start justify-between mb-3">
-        <div className="flex-1">
-          <div className="text-xs mb-1" style={{ color: 'var(--text-secondary)' }}>{task.numbering || '根任务'}</div>
-          <h2 className="text-lg font-bold">{task.title}</h2>
+        <div className="flex-1 min-w-0">
+          <h2 className="text-lg font-bold truncate">
+            {task.numbering && <span className="text-dark-text-secondary mr-2">{task.numbering}</span>}
+            {task.title}
+          </h2>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0 ml-2">
           <Badge status={task.status} />
           {task.assignee && (
             <span className="text-lg" title={task.assignee.role}>{task.assignee.avatar}</span>
@@ -71,7 +73,6 @@ export function TaskDetail() {
       {task.executionSessionId && (
         <div className="mb-3">
           <button
-            onClick={() => navigate(`/execution/${task.id}`)}
             className="w-full p-2 rounded text-sm font-medium transition-colors"
             style={{ backgroundColor: 'var(--brand-purple)', color: 'white' }}
           >

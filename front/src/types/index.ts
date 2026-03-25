@@ -46,6 +46,7 @@ export interface TaskNode {
   status: TaskStatus;
   level: number;
   numbering: string;
+  order: number;
   dependencies: string[];
   children: TaskNode[];
   assignee?: Agent;

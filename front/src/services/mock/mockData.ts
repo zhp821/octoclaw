@@ -64,6 +64,7 @@ function generateTask(
     status: getRandomStatus(),
     level,
     numbering,
+    order: (index + 1) * 1000,
     dependencies,
     children: [],
     assignee: getRandomItem(AGENTS),
@@ -71,7 +72,7 @@ function generateTask(
     steps: generateSteps(),
     chatHistory: [],
     isDecomposing: false,
-    requiresReview: false, // 默认不需要人工审核
+    requiresReview: false,
   }
 
   if (hasChildren) {

@@ -1,1 +1,1 @@
-export default {}
+/// <reference types="vite/client" />

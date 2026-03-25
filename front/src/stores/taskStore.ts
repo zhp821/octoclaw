@@ -30,8 +30,11 @@ interface TaskState {
 
 function flattenTasks(roots: TaskNode[]): TaskNode[] {
   const result: TaskNode[] = []
+  const visited = new Set<string>()
   function traverse(tasks: TaskNode[]) {
     for (const task of tasks) {
+      if (visited.has(task.id)) continue
+      visited.add(task.id)
       result.push(task)
       traverse(task.children)
     }
@@ -70,8 +73,11 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   selectTask: (id: string) => {
     const { expandedIds, roots } = get()
     const newExpanded = new Set(expandedIds)
+    const visited = new Set<string>()
     function expandParents(tasks: TaskNode[], targetId: string): boolean {
       for (const task of tasks) {
+        if (visited.has(task.id)) continue
+        visited.add(task.id)
         if (task.id === targetId) return true
         if (expandParents(task.children, targetId)) {
           newExpanded.add(task.id)
@@ -99,8 +105,11 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     await taskApi.updateTask(id, changes)
     const { roots } = get()
     const newRoots = JSON.parse(JSON.stringify(roots)) as TaskNode[]
+    const visited = new Set<string>()
     function updateInTree(tasks: TaskNode[]): boolean {
       for (const task of tasks) {
+        if (visited.has(task.id)) continue
+        visited.add(task.id)
         if (task.id === id) {
           Object.assign(task, changes)
           return true
@@ -124,8 +133,11 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     const newChild = await taskApi.createChild(parentId, task)
     const { roots } = get()
     const newRoots = JSON.parse(JSON.stringify(roots)) as TaskNode[]
+    const visited = new Set<string>()
     function addChildToTree(tasks: TaskNode[]): boolean {
       for (const t of tasks) {
+        if (visited.has(t.id)) continue
+        visited.add(t.id)
         if (t.id === parentId) {
           t.children.push(newChild)
           return true
@@ -140,7 +152,36 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
   reorderRoots: (newOrder: string[]) => {
     const { roots } = get()
-    const newRoots = newOrder.map(id => roots.find(r => r.id === id)!).filter(Boolean)
+    const orderMap = new Map<string, number>()
+    
+    // 计算新的 order 值
+    for (let i = 0; i < newOrder.length; i++) {
+      const id = newOrder[i]
+      const prevOrder = i > 0 ? orderMap.get(newOrder[i - 1]) ?? null : null
+      const nextTask = roots.find(r => r.id === newOrder[i + 1])
+      const nextOrder = nextTask?.order ?? null
+      
+      let newOrderValue: number
+      if (prevOrder === null && nextOrder === null) {
+        newOrderValue = 1000
+      } else if (prevOrder === null) {
+        newOrderValue = nextOrder! / 2
+      } else if (nextOrder === null) {
+        newOrderValue = prevOrder + 1000
+      } else {
+        newOrderValue = (prevOrder + nextOrder) / 2
+      }
+      orderMap.set(id, newOrderValue)
+    }
+    
+    const newRoots = newOrder.map(id => {
+      const task = roots.find(r => r.id === id)
+      if (task) {
+        return { ...task, order: orderMap.get(id) ?? task.order }
+      }
+      return null
+    }).filter(Boolean) as TaskNode[]
+    
     set({ roots: newRoots })
   },
 
@@ -155,36 +196,49 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   getNextNumbering: (parentId: string | null): string => {
     const { roots } = get()
     if (!parentId || parentId === '__root__') {
-      // 新建根任务，不需要编号
       return ''
     }
-    // 查找父任务
+    
+    const visited = new Set<string>()
     function findTask(id: string): TaskNode | null {
       for (const t of roots) {
+        if (visited.has(t.id)) continue
+        visited.add(t.id)
         if (t.id === id) return t
-        const found = findTaskInChildren(t.children, id)
+        const found = findTaskInChildren(t.children, id, visited)
         if (found) return found
       }
       return null
     }
-    function findTaskInChildren(tasks: TaskNode[], id: string): TaskNode | null {
+    function findTaskInChildren(tasks: TaskNode[], id: string, visited: Set<string>): TaskNode | null {
       for (const task of tasks) {
+        if (visited.has(task.id)) continue
+        visited.add(task.id)
         if (task.id === id) return task
-        const found = findTaskInChildren(task.children, id)
+        const found = findTaskInChildren(task.children, id, visited)
         if (found) return found
       }
       return null
     }
+    
     const parent = findTask(parentId)
     if (!parent) return '1'
-    // 下一个编号 = 当前子任务数量 + 1
-    const nextIndex = parent.children.length + 1
-    // 如果父任务是根任务 (level 0)，子任务编号从 1 开始 (1, 2, 3...)
-    // 否则子任务编号 = 父编号。序号 (如 1.1, 1.2 或 1.2.1, 1.2.2)
-    if (parent.level === 0) {
-      return `${nextIndex}`
+    
+    // 下一个编号 = 最后一个子任务编号最后一位 + 1
+    let nextNum = 1
+    if (parent.children.length > 0) {
+      const lastChild = parent.children[parent.children.length - 1]
+      const parts = lastChild.numbering.split('.')
+      const lastPart = parts[parts.length - 1]
+      nextNum = parseInt(lastPart, 10) + 1
     }
-    return `${parent.numbering}.${nextIndex}`
+    
+    // 如果父任务没有编号（根任务），子任务编号就是 nextNum
+    // 如果父任务有编号，子任务编号是 父编号.nextNum
+    if (!parent.numbering) {
+      return `${nextNum}`
+    }
+    return `${parent.numbering}.${nextNum}`
   },
 
   setSearchQuery: (query: string) => {
