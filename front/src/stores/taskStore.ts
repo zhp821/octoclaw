@@ -59,8 +59,8 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     try {
       const data = await taskApi.fetchTasks()
       set({ 
-        roots: data.roots, 
-        agents: data.agents,
+        roots: data.roots || [], 
+        agents: data.agents || [],
         statusConfig: data.statusConfig || [],
         isLoading: false 
       })
