@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { Upload } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { mediaApi } from '@/services/api/media'
 
 interface Props {
@@ -27,7 +27,7 @@ export function FileUploader({ onFileSelect, accept, maxSize = DEFAULT_MAX_SIZE,
     const files = e.target.files
     if (!files || files.length === 0) return
 
-    const file = multiple ? files[0] : files[0]
+    const file = files[0]
     const validationError = validateFile(file)
     
     if (validationError) {
@@ -56,7 +56,7 @@ export function FileUploader({ onFileSelect, accept, maxSize = DEFAULT_MAX_SIZE,
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1">
       <input
         ref={fileInputRef}
         type="file"
@@ -69,15 +69,16 @@ export function FileUploader({ onFileSelect, accept, maxSize = DEFAULT_MAX_SIZE,
         type="button"
         onClick={handleClick}
         disabled={uploading}
-        className="flex items-center gap-2 px-3 py-2 rounded text-sm border border-dashed hover:border-solid transition-colors"
+        className="p-1.5 rounded hover:opacity-80 disabled:opacity-50 transition-opacity"
         style={{
-          borderColor: 'var(--border-color)',
           backgroundColor: 'var(--bg-secondary)',
           color: 'var(--text-secondary)',
+          minWidth: '32px',
+          height: '32px',
         }}
+        title="上传文件"
       >
-        <Upload className="w-4 h-4" />
-        {uploading ? '上传中...' : '选择文件'}
+        <Plus className="w-4 h-4" />
       </button>
       {error && (
         <span className="text-xs text-red-500">{error}</span>
