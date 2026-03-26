@@ -1,5 +1,6 @@
 import type { Timestamp } from '@/utils/timestamp'
 export type { Timestamp } from '@/utils/timestamp'
+export type { UploadedFile } from './uploadedFile'
 
 export type TaskStatus = 'todo' | 'in-progress' | 'blocked' | 'done' | 'cancel';
 

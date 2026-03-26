@@ -7,9 +7,20 @@ import { ChatMessage } from './ChatMessage'
 import { ChatInput } from './ChatInput'
 import { TypingIndicator } from './TypingIndicator'
 import { OctoClawLogo } from '@/components/Layout/Header'
+import axios from 'axios'
+
+const api = axios.create({
+  baseURL: 'api',
+  timeout: 30000,
+})
+
+interface FileAttachment {
+  file: File
+  preview?: string
+}
 
 export function ChatPanel() {
-  const { selectedId, roots } = useTaskStore()
+  const { selectedId, roots, fetchTasks, selectTask } = useTaskStore()
   const { sessions, isTyping, connectionState, setConnectionState, addMessage } = useChatStore()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   
@@ -75,6 +86,35 @@ export function ChatPanel() {
     wsSendMessage(content)
   }
 
+  const handleCreate = async (content: string, files: FileAttachment[]) => {
+    try {
+      const formData = new FormData()
+      formData.append('title', content)
+      formData.append('description', content)
+      
+      for (const attachment of files) {
+        formData.append('files', attachment.file)
+      }
+
+      const response = await api.post<{ data: { id: string }; success: boolean }>(
+        'plans/create',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      )
+
+      const newTaskId = response.data.data.id
+      
+      await fetchTasks()
+      selectTask(newTaskId)
+    } catch (err) {
+      console.error('创建任务失败:', err)
+    }
+  }
+
   return (
     <div className="flex flex-col h-full" style={{ backgroundColor: 'var(--bg-secondary)' }}>
       <div className="p-3 border-b font-bold flex items-center justify-between flex-shrink-0" style={{ borderColor: 'var(--border-color)' }}>
@@ -127,6 +167,8 @@ export function ChatPanel() {
       
       <ChatInput
         onSend={handleSend}
+        onCreate={handleCreate}
+        showCreate={!selectedId}
         disabled={connectionState === 'connecting'}
         placeholder={selectedId ? '输入消息...' : '描述你想创建的任务...'}
       />
