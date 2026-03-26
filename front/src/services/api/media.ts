@@ -17,15 +17,15 @@ export const mediaApi = {
     const formData = new FormData()
     formData.append('file', file)
 
-    const response = await api.post<{ data: UploadResponse; success: boolean }>(
-      'media/upload',
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }
-    )
-    return response.data.data
+    try {
+      const response = await api.post<{ data: UploadResponse; success: boolean }>(
+        'media/upload',
+        formData
+      )
+      return response.data.data
+    } catch (error: any) {
+      console.error('Upload error response:', error.response?.data)
+      throw error
+    }
   },
 }
