@@ -1,13 +1,14 @@
 import { useEffect, useRef } from 'react'
 import { useChatStore } from '@/stores/chatStore'
 import { useTaskStore } from '@/stores/taskStore'
-import { connectChat, sendMessage as wsSendMessage, getConnectionState } from '@/services/chat/controller'
-import type { ChatMessage as ChatMessageType, TaskNode } from '@/types'
+import { connectChat, sendMessage as wsSendMessage, getConnectionState, switchSession } from '@/services/chat/controller'
+import type { ChatMessage as ChatMessageType, TaskNode, UploadedFile } from '@/types'
 import { ChatMessage } from './ChatMessage'
 import { ChatInput } from './ChatInput'
 import { TypingIndicator } from './TypingIndicator'
 import { OctoClawLogo } from '@/components/Layout/Header'
 import axios from 'axios'
+import { mediaApi } from '@/services/api/media'
 
 const api = axios.create({
   baseURL: 'api',
@@ -20,7 +21,7 @@ interface FileAttachment {
 }
 
 export function ChatPanel() {
-  const { selectedId, roots, fetchTasks, selectTask } = useTaskStore()
+  const { selectedId, roots, fetchTasks, selectTask, toggleExpand } = useTaskStore()
   const { sessions, isTyping, connectionState, setConnectionState, addMessage } = useChatStore()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   
@@ -88,28 +89,32 @@ export function ChatPanel() {
 
   const handleCreate = async (content: string, files: FileAttachment[]) => {
     try {
-      const formData = new FormData()
-      formData.append('title', content)
-      formData.append('description', content)
-      
+      // 上传文件并获取 fileId 引用
+      const fileRefs: string[] = []
       for (const attachment of files) {
-        formData.append('files', attachment.file)
+        const result = await mediaApi.uploadFile(attachment.file)
+        fileRefs.push(`media://${result.fileId}`)
       }
 
-      const response = await api.post<{ data: { id: string }; success: boolean }>(
+      const response = await api.post<{ data: { planId: string; sessionId: string }; success: boolean }>(
         'plans/create',
-        formData,
+        {
+          content,
+          files: fileRefs,
+        },
         {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            'Content-Type': 'application/json',
           },
         }
       )
 
-      const newTaskId = response.data.data.id
-      
-      await fetchTasks()
-      selectTask(newTaskId)
+      if (response.data.success) {
+        await fetchTasks()
+        toggleExpand(response.data.data.planId)
+        selectTask(response.data.data.planId)
+        switchSession(response.data.data.sessionId)
+      }
     } catch (err) {
       console.error('创建任务失败:', err)
     }
