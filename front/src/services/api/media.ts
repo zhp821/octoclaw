@@ -1,14 +1,14 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'api',
+  baseURL: '/octo/api',
   timeout: 30000,
 })
 
 export interface UploadResponse {
-  fileId: string
-  url: string
-  name: string
+  ref: string
+  filename: string
+  contentType: string
   size: number
 }
 

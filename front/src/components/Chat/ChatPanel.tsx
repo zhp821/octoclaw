@@ -11,7 +11,7 @@ import axios from 'axios'
 import { mediaApi } from '@/services/api/media'
 
 const api = axios.create({
-  baseURL: 'api',
+  baseURL: '/octo/api',
   timeout: 30000,
 })
 
@@ -89,11 +89,11 @@ export function ChatPanel() {
 
   const handleCreate = async (content: string, files: FileAttachment[]) => {
     try {
-      // 上传文件并获取 fileId 引用
+      // 上传文件并获取 ref 引用
       const fileRefs: string[] = []
       for (const attachment of files) {
         const result = await mediaApi.uploadFile(attachment.file)
-        fileRefs.push(`media://${result.fileId}`)
+        fileRefs.push(result.ref)
       }
 
       const response = await api.post<{ data: { planId: string; sessionId: string }; success: boolean }>(
