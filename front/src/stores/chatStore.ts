@@ -53,10 +53,27 @@ function deserializeSessions(data: string): Map<string, SessionData> {
   }
 }
 
-const savedData = localStorage.getItem(STORAGE_KEY)
-const initialSessions = savedData ? deserializeSessions(savedData) : new Map()
-const savedDir = localStorage.getItem('octoclaw-chat-currentDir')
-const initialDir = savedDir || ''
+const getInitialSessions = (): Map<string, SessionData> => {
+  if (typeof window === 'undefined') return new Map()
+  try {
+    const savedData = localStorage.getItem(STORAGE_KEY)
+    return savedData ? deserializeSessions(savedData) : new Map()
+  } catch {
+    return new Map()
+  }
+}
+
+const getInitialDir = (): string => {
+  if (typeof window === 'undefined') return ''
+  try {
+    return localStorage.getItem('octoclaw-chat-currentDir') || ''
+  } catch {
+    return ''
+  }
+}
+
+const initialSessions = getInitialSessions()
+const initialDir = getInitialDir()
 
 export const useChatStore = create<ChatState>()(
   persist(
@@ -181,7 +198,11 @@ export const useChatStore = create<ChatState>()(
       
       setCurrentDir: (dir: string) => {
         set({ currentDir: dir })
-        localStorage.setItem('octoclaw-chat-currentDir', dir)
+        try {
+          localStorage.setItem('octoclaw-chat-currentDir', dir)
+        } catch {
+          // 隐私模式或 storage 已满时静默失败
+        }
       },
     }),
     {
