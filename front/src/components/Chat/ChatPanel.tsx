@@ -9,6 +9,7 @@ import { TypingIndicator } from './TypingIndicator'
 import { OctoClawLogo } from '@/components/Layout/Header'
 import axios from 'axios'
 import { mediaApi } from '@/services/api/media'
+import { configApi } from '@/services/api.config'
 
 const api = axios.create({
   baseURL: '/octo/api',
@@ -57,14 +58,28 @@ export function ChatPanel() {
   
   const selectedTask = selectedId ? findTask(selectedId) : null
   const rootTask = selectedId ? findRootTask(selectedId) : null
-  // 会话 ID 格式与后端保持一致：octo:global:plan-xxx 或 global
-  const sessionId = rootTask ? `octo:global:${rootTask.id}` : 'global'
+  // 会话 ID 格式：agent:main:octo:global:<planId>
+  const sessionId = rootTask ? `agent:main:octo:global:${rootTask.id}` : 'global'
   const session = sessions.get(sessionId)
   const taskMessages = session?.messages || []
   
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [taskMessages, isTyping])
+  
+  // 初始化目录（首次使用时从配置获取）
+  useEffect(() => {
+    async function initDir() {
+      // 使用 getState() 避免依赖问题
+      if (!useChatStore.getState().currentDir) {
+        const workspace = await configApi.fetchWorkspaceConfig()
+        if (workspace) {
+          useChatStore.getState().setCurrentDir(workspace)
+        }
+      }
+    }
+    initDir()
+  }, [])  // 仅在组件挂载时执行一次
   
   useEffect(() => {
     connectChat(sessionId)
