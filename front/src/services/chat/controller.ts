@@ -210,13 +210,17 @@ export function disconnectChat(): void {
 }
 
 export function sendMessage(content: string): void {
-  if (!content.trim()) {
-    return
-  }
+  if (!content.trim()) return
 
   const timestamp = Date.now()
   const sessionId = state.sessionId
 
+  // 获取当前目录并构造提示
+  const dir = useChatStore.getState().currentDir
+  const dirHint = dir ? `[系统提示：当前工作目录为 ${dir}]\n` : ''
+  const fullContent = dirHint + content
+
+  // 乐观更新使用原始 content（不含 dirHint，对用户透明）
   if (sessionId) {
     useChatStore.getState().addMessage(sessionId, {
       id: `msg-user-${timestamp}`,
@@ -226,15 +230,16 @@ export function sendMessage(content: string): void {
     })
   }
 
+  // WebSocket 发送带 dirHint 的完整内容
   if (state.connected && getCurrentSocket()) {
     getCurrentSocket()!.send(JSON.stringify({
       type: 'message.send',
       session_id: sessionId,
-      payload: { content },
+      payload: { content: fullContent },
       timestamp,
     }))
   } else {
-    messageQueue.push({ content, timestamp })
+    messageQueue.push({ content: fullContent, timestamp })
   }
 }
 
