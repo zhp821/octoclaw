@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useChatStore } from '@/stores/chatStore'
 import { useTaskStore } from '@/stores/taskStore'
 import { connectChat, sendMessage as wsSendMessage, getConnectionState, switchSession } from '@/services/chat/controller'
@@ -23,7 +23,7 @@ interface FileAttachment {
 
 export function ChatPanel() {
   const { selectedId, roots, fetchTasks, selectTask, toggleExpand } = useTaskStore()
-  const { sessions, isTyping, connectionState, setConnectionState, addMessage } = useChatStore()
+  const { sessions, isTyping, connectionState, setConnectionState } = useChatStore()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   
   function findTask(id: string): TaskNode | null {
@@ -56,30 +56,17 @@ export function ChatPanel() {
     return findInTree(roots, taskId, null)
   }
   
-  const selectedTask = selectedId ? findTask(selectedId) : null
+const selectedTask = selectedId ? findTask(selectedId) : null
   const rootTask = selectedId ? findRootTask(selectedId) : null
-  // 会话 ID 格式：agent:main:octo:global:<planId>
-  const sessionId = rootTask ? `agent:main:octo:global:${rootTask.id}` : 'global'
+  
+  // 从 plan 数据中获取 sessionId（优先使用 globalSessionId，兼容 executionSessionId）
+  const sessionId = rootTask?.globalSessionId || rootTask?.executionSessionId || (rootTask ? `agent:main:octo:global:${rootTask.id}` : 'global')
   const session = sessions.get(sessionId)
   const taskMessages = session?.messages || []
   
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [taskMessages, isTyping])
-  
-  // 初始化目录（首次使用时从配置获取）
-  useEffect(() => {
-    async function initDir() {
-      // 使用 getState() 避免依赖问题
-      if (!useChatStore.getState().currentDir) {
-        const workspace = await configApi.fetchWorkspaceConfig()
-        if (workspace) {
-          useChatStore.getState().setCurrentDir(workspace)
-        }
-      }
-    }
-    initDir()
-  }, [])  // 仅在组件挂载时执行一次
   
   useEffect(() => {
     connectChat(sessionId)
@@ -105,7 +92,6 @@ export function ChatPanel() {
 
   const handleCreate = async (content: string, files: FileAttachment[]) => {
     try {
-      // 上传文件并获取 ref 引用
       const fileRefs: string[] = []
       for (const attachment of files) {
         const result = await mediaApi.uploadFile(attachment.file)
@@ -138,21 +124,22 @@ export function ChatPanel() {
 
   return (
     <div className="flex flex-col h-full" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-      <div className="p-3 border-b font-bold flex items-center justify-between flex-shrink-0" style={{ borderColor: 'var(--border-color)' }}>
+      <div className="p-2 border-b flex items-center justify-between flex-shrink-0" style={{ borderColor: 'var(--border-color)' }}>
         <div className="flex items-center gap-2">
           <OctoClawLogo className="w-5 h-5" />
           <span style={{ color: 'var(--text-primary)' }}>AI 助手</span>
-        </div>
-        <div className="flex items-center gap-2">
-          {taskDisplayName ? (
-            <span className="text-xs truncate max-w-[150px]" style={{ color: 'var(--text-secondary)' }} title={taskDisplayName}>
+          {taskDisplayName && (
+            <span className="text-xs truncate max-w-[120px]" style={{ color: 'var(--text-secondary)' }} title={taskDisplayName}>
               {taskDisplayName}
             </span>
-          ) : (
+          )}
+          {!selectedId && (
             <span className="text-xs px-2 py-0.5 rounded whitespace-nowrap" style={{ color: 'var(--brand-purple)', backgroundColor: 'rgba(139,92,246,0.1)' }}>
               创建根任务
             </span>
           )}
+        </div>
+        <div className="flex items-center gap-2">
           <span className={`w-2 h-2 rounded-full ${
             connectionState === 'connected' ? 'bg-green-500' :
             connectionState === 'connecting' ? 'bg-yellow-500' : 'bg-gray-500'

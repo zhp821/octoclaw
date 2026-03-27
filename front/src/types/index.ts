@@ -59,6 +59,9 @@ export interface TaskNode {
   
   agentId?: string;
   
+  globalSessionId?: string;
+  dir?: string;
+  
   executionSessionId?: string;
   executionAgentId?: string;
   executionMessages?: ChatMessage[];

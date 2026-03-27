@@ -215,8 +215,15 @@ export function sendMessage(content: string): void {
   const timestamp = Date.now()
   const sessionId = state.sessionId
 
-  // 获取当前目录并构造提示
-  const dir = useChatStore.getState().currentDir
+  // 从 sessionId 提取 planId（格式: agent:main:octo:global:${planId}）
+  let planId: string | null = null
+  if (sessionId && sessionId.startsWith('agent:main:octo:global:')) {
+    planId = sessionId.replace('agent:main:octo:global:', '')
+  }
+
+  // 获取当前任务对应的目录
+  const chatState = useChatStore.getState()
+  const dir = planId ? chatState.getPlanDir(planId) : chatState.currentDir
   const dirHint = dir ? `[系统提示：当前工作目录为 ${dir}]\n` : ''
   const fullContent = dirHint + content
 

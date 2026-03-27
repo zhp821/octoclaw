@@ -26,7 +26,11 @@ interface ChatState {
   connectionState: ConnectionState
   isTyping: boolean
   currentDir: string
+  planDirs: Map<string, string>
+  
   setCurrentDir: (dir: string) => void
+  getPlanDir: (planId: string) => string
+  setPlanDir: (planId: string, dir: string) => void
   
   createSession: (type: 'global' | 'execution', id: string) => string
   getOrCreateSession: (type: 'global' | 'execution', id: string) => SessionData
@@ -72,8 +76,23 @@ const getInitialDir = (): string => {
   }
 }
 
+const getInitialPlanDirs = (): Map<string, string> => {
+  if (typeof window === 'undefined') return new Map()
+  try {
+    const data = localStorage.getItem('octoclaw-chat-planDirs')
+    if (data) {
+      const entries = JSON.parse(data)
+      return new Map(entries)
+    }
+    return new Map()
+  } catch {
+    return new Map()
+  }
+}
+
 const initialSessions = getInitialSessions()
 const initialDir = getInitialDir()
+const initialPlanDirs = getInitialPlanDirs()
 
 export const useChatStore = create<ChatState>()(
   persist(
@@ -85,6 +104,7 @@ export const useChatStore = create<ChatState>()(
       connectionState: 'disconnected',
       isTyping: false,
       currentDir: initialDir,
+      planDirs: initialPlanDirs,
       
       createSession: (type, id) => {
         const sessionId = type === 'global' 
@@ -201,22 +221,44 @@ export const useChatStore = create<ChatState>()(
         try {
           localStorage.setItem('octoclaw-chat-currentDir', dir)
         } catch {
-          // 隐私模式或 storage 已满时静默失败
         }
+      },
+      
+      getPlanDir: (planId: string): string => {
+        const planDirs = get().planDirs
+        return planDirs.get(planId) || get().currentDir
+      },
+      
+      setPlanDir: (planId: string, dir: string) => {
+        set((state) => {
+          const newPlanDirs = new Map(state.planDirs)
+          newPlanDirs.set(planId, dir)
+          try {
+            localStorage.setItem('octoclaw-chat-planDirs', JSON.stringify(Array.from(newPlanDirs.entries())))
+          } catch {
+          }
+          return { planDirs: newPlanDirs }
+        })
       },
     }),
     {
       name: STORAGE_KEY,
       partialize: (state) => ({ 
         sessions: Array.from(state.sessions.entries()),
-        currentDir: state.currentDir
+        currentDir: state.currentDir,
+        planDirs: Array.from(state.planDirs.entries()),
       }),
       merge: (persisted, current) => {
-        const persistedState = persisted as { sessions?: [string, SessionData][]; currentDir?: string }
+        const persistedState = persisted as { 
+          sessions?: [string, SessionData][]; 
+          currentDir?: string;
+          planDirs?: [string, string][];
+        }
         return {
           ...current,
           sessions: persistedState?.sessions ? new Map(persistedState.sessions) : current.sessions,
           currentDir: persistedState?.currentDir ?? current.currentDir,
+          planDirs: persistedState?.planDirs ? new Map(persistedState.planDirs) : current.planDirs,
         }
       },
     }

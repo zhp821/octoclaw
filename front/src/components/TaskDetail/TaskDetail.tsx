@@ -6,32 +6,96 @@ import { QualityGate } from './QualityGate'
 import { TaskDependencies } from './TaskDependencies'
 import { Badge } from '@/components/shared/Badge'
 import { NewTaskForm } from './NewTaskForm'
-import { DirSelector } from './DirSelector'
+import { useState, useEffect } from 'react'
+
+function DirSelector({ planId }: { planId: string | null }) {
+  const { getPlanDir, setPlanDir } = useChatStore()
+  const [isEditing, setIsEditing] = useState(false)
+  const [editValue, setEditValue] = useState('')
+
+  const dir = planId ? getPlanDir(planId) : ''
+
+  useEffect(() => {
+    setEditValue(dir)
+  }, [dir])
+
+  const handleSave = async () => {
+    const trimmed = editValue.trim()
+    if (trimmed && planId) {
+      setPlanDir(planId, trimmed)
+      try {
+        await configApi.updatePlanDir(planId, trimmed)
+      } catch (err) {
+        console.error('保存目录失败:', err)
+      }
+    }
+    setIsEditing(false)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSave()
+    } else if (e.key === 'Escape') {
+      setEditValue(dir)
+      setIsEditing(false)
+    }
+  }
+
+  const handleSelectDir = async () => {
+    // 直接进入编辑模式，用户可以粘贴或输入完整路径
+    setEditValue(dir)
+    setIsEditing(true)
+  }
+
+  if (!planId) return null
+
+  if (isEditing) {
+    return (
+      <div className="flex items-center gap-1">
+        <input
+          type="text"
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onBlur={handleSave}
+          className="text-xs px-2 py-0.5 rounded border"
+          style={{ 
+            backgroundColor: 'var(--bg-secondary)', 
+            color: 'var(--text-primary)',
+            borderColor: 'var(--border-color)',
+            minWidth: '300px'
+          }}
+          autoFocus
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex items-center gap-1">
+      <div 
+        className="flex items-center gap-1 cursor-pointer hover:opacity-80 px-2 py-1 rounded border"
+        style={{ backgroundColor: 'rgba(139,92,246,0.05)', borderColor: 'rgba(139,92,246,0.2)' }}
+        onClick={() => {
+          setEditValue(dir)
+          setIsEditing(true)
+        }}
+        title="点击编辑工作路径"
+      >
+        <span className="text-xs font-medium" style={{ color: 'var(--brand-purple)' }}>工作路径:</span>
+        <span 
+          className="text-xs"
+          style={{ color: 'var(--text-secondary)' }}
+        >
+          {dir || '(点击设置)'}
+        </span>
+      </div>
+    </div>
+  )
+}
 
 export function TaskDetail() {
   const { selectedId, roots, isCreatingTask, creatingParentId, cancelCreateTask } = useTaskStore()
-  const { currentDir, setCurrentDir } = useChatStore()
-
-  const handleSaveDir = async (dir: string) => {
-    setCurrentDir(dir)
-    const rootTask = selectedId ? findRootTask(selectedId) : null
-    if (rootTask) {
-      try {
-        await configApi.updatePlanDir(rootTask.id, dir)
-      } catch (err) {
-        console.error('保存目录到 plan 失败:', err)
-      }
-    }
-  }
-
-  function findRootTask(taskId: string): any {
-    for (const t of roots) {
-      if (t.id === taskId) return t
-      const found = findTaskInChildren(t.children, taskId, new Set())
-      if (found) return t
-    }
-    return null
-  }
 
   if (isCreatingTask) {
     return (
@@ -61,7 +125,17 @@ export function TaskDetail() {
     return null
   }
 
+  function findRootTask(taskId: string): any {
+    for (const t of roots) {
+      if (t.id === taskId) return t
+      const found = findTaskInChildren(t.children, taskId, new Set())
+      if (found) return t
+    }
+    return null
+  }
+
   const task = selectedId ? findTask(selectedId) : null
+  const rootTask = selectedId ? findRootTask(selectedId) : null
   const isRootTask = task && !task.parentId
 
   if (!task) {
@@ -71,6 +145,8 @@ export function TaskDetail() {
       </div>
     )
   }
+
+  const displayDescription = task.description || task.title
 
   return (
     <div className="p-3 overflow-y-auto h-full" style={{ color: 'var(--text-primary)' }}>
@@ -86,16 +162,16 @@ export function TaskDetail() {
           {task.assignee && (
             <span className="text-lg" title={task.assignee.role}>{task.assignee.avatar}</span>
           )}
-          {isRootTask && (
-            <DirSelector dir={currentDir} onSave={handleSaveDir} />
-          )}
         </div>
       </div>
 
       <div className="mb-3">
-        <h3 className="text-sm font-bold mb-2" style={{ color: 'var(--text-secondary)' }}>描述</h3>
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <h3 className="text-sm font-bold flex-shrink-0" style={{ color: 'var(--text-secondary)' }}>描述</h3>
+          {isRootTask && <DirSelector planId={rootTask?.id} />}
+        </div>
         <div className="p-3 rounded whitespace-pre-wrap" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
-          {task.description}
+          {displayDescription}
         </div>
       </div>
 
