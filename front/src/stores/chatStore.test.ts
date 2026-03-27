@@ -181,3 +181,29 @@ describe('ChatStore Integration', () => {
     })
   })
 })
+
+describe('Directory Management', () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  it('should initialize with empty currentDir', () => {
+    expect(useChatStore.getState().currentDir).toBe('')
+  })
+
+  it('should set current directory', () => {
+    useChatStore.getState().setCurrentDir('/home/user/workspace')
+    expect(useChatStore.getState().currentDir).toBe('/home/user/workspace')
+  })
+
+  it('should persist currentDir to localStorage', () => {
+    useChatStore.getState().setCurrentDir('/test/path')
+    expect(localStorage.getItem('octoclaw-chat-currentDir')).toBe('/test/path')
+  })
+
+  it('should load currentDir from localStorage on init', () => {
+    localStorage.setItem('octoclaw-chat-currentDir', '/saved/path')
+    useChatStore.getState().setCurrentDir('/new/path')
+    expect(localStorage.getItem('octoclaw-chat-currentDir')).toBe('/new/path')
+  })
+})
