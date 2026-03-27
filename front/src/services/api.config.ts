@@ -70,7 +70,8 @@ export const chatApi = {
 export const configApi = {
   async fetchWorkspaceConfig(): Promise<string> {
     try {
-      const response = await api.get<{ agents: { defaults: { workspace: string } } }>('config')
+      // 使用绝对路径 /api/config，不受 baseURL 影响
+      const response = await axios.get<{ agents: { defaults: { workspace: string } } }>('/api/config')
       return response.data.agents?.defaults?.workspace || ''
     } catch {
       return ''
