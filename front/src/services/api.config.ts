@@ -67,4 +67,15 @@ export const chatApi = {
   },
 }
 
-export default { taskApi, chatApi }
+export const configApi = {
+  async fetchWorkspaceConfig(): Promise<string> {
+    try {
+      const response = await api.get<{ agents: { defaults: { workspace: string } } }>('config')
+      return response.data.agents?.defaults?.workspace || ''
+    } catch {
+      return ''
+    }
+  }
+}
+
+export default { taskApi, chatApi, configApi }
