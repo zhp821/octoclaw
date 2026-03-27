@@ -25,6 +25,8 @@ interface ChatState {
   currentSessionId: string | null
   connectionState: ConnectionState
   isTyping: boolean
+  currentDir: string
+  setCurrentDir: (dir: string) => void
   
   createSession: (type: 'global' | 'execution', id: string) => string
   getOrCreateSession: (type: 'global' | 'execution', id: string) => SessionData
@@ -53,6 +55,8 @@ function deserializeSessions(data: string): Map<string, SessionData> {
 
 const savedData = localStorage.getItem(STORAGE_KEY)
 const initialSessions = savedData ? deserializeSessions(savedData) : new Map()
+const savedDir = localStorage.getItem('octoclaw-chat-currentDir')
+const initialDir = savedDir || ''
 
 export const useChatStore = create<ChatState>()(
   persist(
@@ -63,6 +67,7 @@ export const useChatStore = create<ChatState>()(
       currentSessionId: null,
       connectionState: 'disconnected',
       isTyping: false,
+      currentDir: initialDir,
       
       createSession: (type, id) => {
         const sessionId = type === 'global' 
@@ -173,19 +178,25 @@ export const useChatStore = create<ChatState>()(
       setTyping: (sessionId, isTyping) => {
         set({ isTyping })
       },
+      
+      setCurrentDir: (dir: string) => {
+        set({ currentDir: dir })
+        localStorage.setItem('octoclaw-chat-currentDir', dir)
+      },
     }),
     {
       name: STORAGE_KEY,
-      partialize: (state) => ({ sessions: Array.from(state.sessions.entries()) }),
+      partialize: (state) => ({ 
+        sessions: Array.from(state.sessions.entries()),
+        currentDir: state.currentDir
+      }),
       merge: (persisted, current) => {
-        const persistedState = persisted as { sessions?: [string, SessionData][] }
-        if (persistedState?.sessions) {
-          return {
-            ...current,
-            sessions: new Map(persistedState.sessions),
-          }
+        const persistedState = persisted as { sessions?: [string, SessionData][]; currentDir?: string }
+        return {
+          ...current,
+          sessions: persistedState?.sessions ? new Map(persistedState.sessions) : current.sessions,
+          currentDir: persistedState?.currentDir ?? current.currentDir,
         }
-        return current
       },
     }
   )
