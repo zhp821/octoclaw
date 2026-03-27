@@ -1,12 +1,15 @@
 import { useTaskStore } from '@/stores/taskStore'
+import { useChatStore } from '@/stores/chatStore'
 import { TaskSteps } from './TaskSteps'
 import { QualityGate } from './QualityGate'
 import { TaskDependencies } from './TaskDependencies'
 import { Badge } from '@/components/shared/Badge'
 import { NewTaskForm } from './NewTaskForm'
+import { DirSelector } from './DirSelector'
 
 export function TaskDetail() {
   const { selectedId, roots, isCreatingTask, creatingParentId, cancelCreateTask } = useTaskStore()
+  const { currentDir, setCurrentDir } = useChatStore()
 
   if (isCreatingTask) {
     return (
@@ -37,6 +40,7 @@ export function TaskDetail() {
   }
 
   const task = selectedId ? findTask(selectedId) : null
+  const isRootTask = task && !task.parentId
 
   if (!task) {
     return (
@@ -59,6 +63,9 @@ export function TaskDetail() {
           <Badge status={task.status} />
           {task.assignee && (
             <span className="text-lg" title={task.assignee.role}>{task.assignee.avatar}</span>
+          )}
+          {isRootTask && (
+            <DirSelector dir={currentDir} onSave={setCurrentDir} />
           )}
         </div>
       </div>
