@@ -29,14 +29,17 @@ export function ChatMessage({ message }: Props) {
         {isUser ? '👤' : <OctoClawLogo className="w-7 h-7" />}
       </div>
       <div
-        className={`max-w-[80%] p-3 rounded-lg text-sm border`}
+        className={`max-w-[80%] p-3 rounded-lg text-sm border overflow-auto`}
         style={{ 
           backgroundColor: isUser ? 'var(--bg-secondary)' : 'rgba(139,92,246,0.1)',
           borderColor: isUser ? 'var(--border-color)' : 'rgba(139,92,246,0.4)',
-          color: 'var(--text-primary)'
+          color: 'var(--text-primary)',
+          wordBreak: 'break-word',
+          overflowWrap: 'break-word',
+          whiteSpace: 'normal'
         }}
       >
-        <p className="whitespace-pre-wrap">{message.content}</p>
+        <p className="whitespace-pre-wrap break-words">{message.content}</p>
         <div className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
           {formatTime(message.timestamp)}
         </div>

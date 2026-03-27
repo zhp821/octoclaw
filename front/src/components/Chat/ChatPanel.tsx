@@ -57,7 +57,8 @@ export function ChatPanel() {
   
   const selectedTask = selectedId ? findTask(selectedId) : null
   const rootTask = selectedId ? findRootTask(selectedId) : null
-  const sessionId = rootTask ? `plan-${rootTask.id}` : 'global'
+  // 会话 ID 格式与后端保持一致：octo:global:plan-xxx 或 global
+  const sessionId = rootTask ? `octo:global:${rootTask.id}` : 'global'
   const session = sessions.get(sessionId)
   const taskMessages = session?.messages || []
   
