@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { X, Plus, Send, Paperclip } from 'lucide-react'
 import { mediaApi } from '@/services/api/media'
+import { FILE_UPLOAD_CONFIG, isAllowedExtension, formatFileSize, getAllowedExtensionsString } from '@/config/fileUpload'
 
 interface FileAttachment {
   file: File
@@ -19,6 +20,7 @@ export function ChatInput({ onSend, onCreate, disabled, placeholder, showCreate 
   const [content, setContent] = useState('')
   const [attachments, setAttachments] = useState<FileAttachment[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const handleSubmit = () => {
     if (content.trim()) {
@@ -39,6 +41,45 @@ export function ChatInput({ onSend, onCreate, disabled, placeholder, showCreate 
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSubmit()
+    }
+  }
+
+  const handlePaste = async (e: React.ClipboardEvent) => {
+    const items = e.clipboardData.items
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i]
+      
+      // 支持文件类型（包括复制的文件和图片）
+      if (item.kind === 'file') {
+        e.preventDefault()
+        const file = item.getAsFile()
+        if (file) {
+          // 验证文件类型
+          if (!isAllowedExtension(file.name)) {
+            alert(`不支持的文件类型：${file.name}\n支持的类型：${FILE_UPLOAD_CONFIG.allowedExtensions.join(', ')}`)
+            continue
+          }
+          
+          // 验证文件大小
+          if (file.size > FILE_UPLOAD_CONFIG.maxFileSize) {
+            alert(`文件过大：${file.name}\n最大限制：${formatFileSize(FILE_UPLOAD_CONFIG.maxFileSize)}`)
+            continue
+          }
+          
+          try {
+            const result = await mediaApi.uploadFile(file)
+            setAttachments(prev => [...prev, {
+              file,
+              preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined,
+            }])
+          } catch (err: any) {
+            console.error('Paste upload failed:', err)
+            const errorMsg = err.response?.data?.error?.message || '上传失败，请重试'
+            alert(`上传失败：${errorMsg}`)
+          }
+        }
+        break
+      }
     }
   }
 
@@ -118,6 +159,7 @@ export function ChatInput({ onSend, onCreate, disabled, placeholder, showCreate 
       
       {/* 输入框 */}
       <textarea
+        ref={textareaRef}
         className="flex-1 px-3 py-3 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 transition-all min-h-[50px] max-h-[160px] border"
         style={{ 
           backgroundColor: 'var(--bg-secondary)', 
@@ -130,6 +172,7 @@ export function ChatInput({ onSend, onCreate, disabled, placeholder, showCreate 
         value={content}
         onChange={e => setContent(e.target.value)}
         onKeyDown={handleKeyDown}
+        onPaste={handlePaste}
         disabled={disabled}
         placeholder={placeholder || '输入消息...'}
       />
@@ -140,7 +183,7 @@ export function ChatInput({ onSend, onCreate, disabled, placeholder, showCreate 
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*,.pdf,.doc,.docx,.txt,.md"
+          accept={getAllowedExtensionsString()}
           onChange={handleFileChange}
           multiple
           className="hidden"
