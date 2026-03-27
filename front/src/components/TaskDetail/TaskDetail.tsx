@@ -1,5 +1,6 @@
 import { useTaskStore } from '@/stores/taskStore'
 import { useChatStore } from '@/stores/chatStore'
+import { configApi } from '@/services/api.config'
 import { TaskSteps } from './TaskSteps'
 import { QualityGate } from './QualityGate'
 import { TaskDependencies } from './TaskDependencies'
@@ -10,6 +11,27 @@ import { DirSelector } from './DirSelector'
 export function TaskDetail() {
   const { selectedId, roots, isCreatingTask, creatingParentId, cancelCreateTask } = useTaskStore()
   const { currentDir, setCurrentDir } = useChatStore()
+
+  const handleSaveDir = async (dir: string) => {
+    setCurrentDir(dir)
+    const rootTask = selectedId ? findRootTask(selectedId) : null
+    if (rootTask) {
+      try {
+        await configApi.updatePlanDir(rootTask.id, dir)
+      } catch (err) {
+        console.error('保存目录到 plan 失败:', err)
+      }
+    }
+  }
+
+  function findRootTask(taskId: string): any {
+    for (const t of roots) {
+      if (t.id === taskId) return t
+      const found = findTaskInChildren(t.children, taskId, new Set())
+      if (found) return t
+    }
+    return null
+  }
 
   if (isCreatingTask) {
     return (
@@ -65,7 +87,7 @@ export function TaskDetail() {
             <span className="text-lg" title={task.assignee.role}>{task.assignee.avatar}</span>
           )}
           {isRootTask && (
-            <DirSelector dir={currentDir} onSave={setCurrentDir} />
+            <DirSelector dir={currentDir} onSave={handleSaveDir} />
           )}
         </div>
       </div>

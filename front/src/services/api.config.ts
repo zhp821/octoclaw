@@ -75,6 +75,10 @@ export const configApi = {
     } catch {
       return ''
     }
+  },
+
+  async updatePlanDir(planId: string, dir: string): Promise<void> {
+    await api.put(`plans/${planId}/dir`, { dir })
   }
 }
 
