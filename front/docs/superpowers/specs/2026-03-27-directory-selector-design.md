@@ -47,7 +47,11 @@ interface ChatState {
 }
 ```
 
-**持久化**：同步存储到 localStorage（key: `octoclaw-agent-main-dir`）
+**持久化**：同步存储到 localStorage（key: `octoclaw-chat-currentDir`）
+
+**目录作用域**：全局共享，所有根任务使用同一目录。切换根任务时目录保持不变。
+
+**多标签页行为**：不主动同步。每个标签页独立维护 chatStore 内存状态，页面刷新后从 localStorage 恢复。
 
 ### 3. Session ID 格式修改
 
@@ -60,15 +64,23 @@ interface ChatState {
 - 支持后端从 session key 解析智能体 ID
 - 默认使用 `main` 智能体
 
+**后端兼容性验证**：
+- picoclaw 的 session key 解析逻辑在 `pkg/routing/session_key.go` 的 `ParseAgentSessionKey` 函数
+- 该函数解析格式 `agent:<agentId>:<rest>`，支持任意 `<rest>` 内容
+- 新格式 `agent:main:octo:global:${rootTask.id}` 可被正确解析为 `{ agentId: "main", rest: "octo:global:${rootTask.id}" }`
+
 **影响范围**：
 - `ChatPanel.tsx`：sessionId 构造
 - `controller.ts`：WebSocket 连接
-- 后端无需修改（session key 格式向后兼容）
+- 后端无需修改
 
 ### 4. 目录获取流程
 
+**初始化位置**：`ChatPanel.tsx` 的 `useEffect([sessionId])` 中触发
+
+**获取流程**：
 ```
-应用启动 / 组件挂载
+ChatPanel useEffect 触发
   ↓
 检查 chatStore.currentDir
   ↓ 有值
@@ -81,9 +93,20 @@ GET /api/config
 使用默认值 "~/.picoclaw/workspace" 或提示用户手动设置
 ```
 
+**API 响应格式**：
+```json
+{
+  "agents": {
+    "defaults": {
+      "workspace": "D:/workspace"
+    }
+  }
+}
+```
+
 ### 5. 消息发送附加目录
 
-**实现位置**：`controller.ts` 的 `sendMessage` 函数（第 212-239 行）
+**实现位置**：`controller.ts` 的 `sendMessage` 函数
 
 **改动逻辑**：
 ```typescript
@@ -114,8 +137,8 @@ export function sendMessage(content: string): void {
 | `front/src/components/TaskDetail/TaskDetail.tsx` | 集成 DirSelector，判断根任务 |
 | `front/src/stores/chatStore.ts` | 新增 currentDir 状态和 setCurrentDir 方法 |
 | `front/src/services/chat/controller.ts` | sendMessage 函数附加目录信息 |
-| `front/src/components/Chat/ChatPanel.tsx` | 修改 session ID 格式 |
-| `front/src/services/api.config.ts` | 新增 fetchConfig 方法获取配置 |
+| `front/src/components/Chat/ChatPanel.tsx` | 修改 session ID 格式，useEffect 中初始化目录 |
+| `front/src/services/api.config.ts` | 扩展：新增 fetchWorkspaceConfig 方法获取配置 |
 
 ## 技术细节
 
@@ -185,7 +208,8 @@ export function sendMessage(content: string): void {
 1. 根任务详情页顶部显示目录选择器（一行）
 2. 点击编辑可修改目录，回车保存到 chatStore + localStorage
 3. 页面刷新后目录保持
-4. 发送消息时后端收到包含目录信息的消息
+4. 发送消息时后端收到包含目录信息的消息（可通过浏览器 DevTools Network 面板查看 WebSocket 消息内容验证）
 5. 子任务详情页不显示目录选择器
 6. `/api/config` 获取失败时可正常使用，允许手动设置目录
 7. 目录为空时不影响正常消息发送
+8. 切换不同根任务时目录保持不变（全局共享）
