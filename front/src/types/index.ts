@@ -1,3 +1,16 @@
+/**
+ * 类型定义 — 与后端 Go struct 对应
+ * 后端文件：picoclaw/web/backend/api/octo/octo.go
+ *
+ * TaskStatus    → octo.TaskStatus
+ * MessageRole   → octo.MessageRole
+ * Agent         → octo.Agent
+ * QualityGate   → octo.QualityGate
+ * ChatMessage   → octo.ChatMessage (timestamp: 后端 int64 → 前端 number, epoch ms)
+ * TaskNode      → octo.TaskNode
+ * ProjectData   → octo.ProjectData
+ */
+
 export type TaskStatus = 'todo' | 'in-progress' | 'blocked' | 'done' | 'cancel';
 
 export type MessageRole = 'user' | 'assistant' | 'system';

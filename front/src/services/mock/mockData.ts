@@ -8,7 +8,7 @@ function getRandomStatus(): TaskStatus {
 
 const TITLE_PREFIX = ['Design', 'Develop', 'Test', 'Deploy', 'Research', 'Plan']
 
-export const AGENTS: Agent[] = [
+const AGENTS: Agent[] = [
   { id: 'a1', name: 'DevBot', avatar: '🤖', role: 'Developer' },
   { id: 'a2', name: 'QA-Master', avatar: '🔍', role: 'Tester' },
   { id: 'a3', name: 'Architect-X', avatar: '🏗️', role: 'Architect' },

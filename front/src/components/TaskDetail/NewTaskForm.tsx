@@ -9,7 +9,7 @@ interface Props {
 }
 
 export function NewTaskForm({ parentId, onCancel }: Props) {
-  const { createChild, getNextNumbering, roots } = useTaskStore()
+  const { createChild, getNextNumbering, roots, agents } = useTaskStore()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [assigneeId, setAssigneeId] = useState('')
@@ -22,12 +22,6 @@ export function NewTaskForm({ parentId, onCancel }: Props) {
   const nextNumbering = getNextNumbering(parentId)
   const isRootTask = !parentId || parentId === '__root__'
 
-  const AGENTS = [
-    { id: 'a1', name: 'DevBot', avatar: '🤖', role: 'Developer' },
-    { id: 'a2', name: 'QA-Master', avatar: '🔍', role: 'Tester' },
-    { id: 'a3', name: 'Architect-X', avatar: '🏗️', role: 'Architect' },
-    { id: 'a4', name: 'PM-Pro', avatar: '📋', role: 'Product Manager' },
-  ]
 
   function getParentLevel(id: string | null): number {
     if (!id || id === '__root__') return -1
@@ -50,7 +44,7 @@ export function NewTaskForm({ parentId, onCancel }: Props) {
     await createChild(parentId || '__root__', {
       title,
       description,
-      assignee: AGENTS.find(a => a.id === assigneeId) || AGENTS[0],
+      assignee: agents.find((a: any) => a.id === assigneeId) || agents[0],
       qualityGate: {
         enabled: qualityGateEnabled,
         description: qualityGateDescription,
@@ -120,7 +114,7 @@ export function NewTaskForm({ parentId, onCancel }: Props) {
             style={{ backgroundColor: 'var(--bg-secondary)' }}
           >
             <option value="">选择智能体</option>
-            {AGENTS.map(agent => (
+            {agents.map(agent => (
               <option key={agent.id} value={agent.id} style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
                 {agent.avatar} {agent.name} - {agent.role}
               </option>
