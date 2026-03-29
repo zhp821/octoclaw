@@ -1,6 +1,5 @@
 import { useTaskStore } from '@/stores/taskStore'
 import { TaskSteps } from './TaskSteps'
-import { QualityGate } from './QualityGate'
 import { TaskDependencies } from './TaskDependencies'
 import { Badge } from '@/components/shared/Badge'
 import { DirSelector } from '@/components/shared/DirSelector'

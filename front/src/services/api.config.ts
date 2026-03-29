@@ -13,11 +13,6 @@ export const taskApi = {
     return response.data.data
   },
 
-  async fetchTaskDetail(id: string): Promise<TaskNode> {
-    const response = await api.get<{ data: TaskNode; success: boolean }>('tasks/' + id)
-    return response.data.data
-  },
-
   async updateTask(id: string, changes: Partial<TaskNode>): Promise<TaskNode> {
     const response = await api.put<{ data: TaskNode; success: boolean }>('tasks/' + id, changes)
     return response.data.data
@@ -29,11 +24,6 @@ export const taskApi = {
 
   async createChild(parentId: string, task: Partial<TaskNode>): Promise<TaskNode> {
     const response = await api.post<{ data: TaskNode; success: boolean }>('tasks/' + parentId + '/children', task)
-    return response.data.data
-  },
-
-  async reorderTasks(parentId: string | null, newOrder: string[]): Promise<{ newOrder: string[] }> {
-    const response = await api.post<{ data: { newOrder: string[] }; success: boolean }>('tasks/reorder', { parentId, newOrder })
     return response.data.data
   },
 }

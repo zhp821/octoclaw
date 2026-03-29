@@ -1,5 +1,5 @@
 interface Props {
-  status: 'todo' | 'in-progress' | 'blocked' | 'done'
+  status: 'todo' | 'in-progress' | 'blocked' | 'done' | 'cancel'
 }
 
 export function Badge({ status }: Props) {
@@ -8,6 +8,7 @@ export function Badge({ status }: Props) {
     'in-progress': 'bg-blue-500/20 text-blue-400',
     blocked: 'bg-red-500/20 text-red-400',
     done: 'bg-green-500/20 text-green-400',
+    cancel: 'bg-gray-500/20 text-gray-500',
   }
 
   const labels = {
@@ -15,6 +16,7 @@ export function Badge({ status }: Props) {
     'in-progress': '进行中',
     blocked: '阻塞',
     done: '已完成',
+    cancel: '已取消',
   }
 
   return (

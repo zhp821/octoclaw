@@ -1,9 +1,9 @@
 // 文件上传配置
-// 与后端配置同步：picoclaw/web/backend/api/octo/config.go
+// 后端权威源：picoclaw/web/backend/api/octo/config.go
+// 前端仅作 UI 提示，后端校验是安全边界
 
 export const FILE_UPLOAD_CONFIG = {
-  maxFileSize: 10 * 1024 * 1024, // 10MB
-  maxFilesPerMsg: 5,
+  maxFileSize: 10 * 1024 * 1024,
   allowedExtensions: [
     // Documents
     '.pdf', '.doc', '.docx', '.txt', '.md',
