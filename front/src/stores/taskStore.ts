@@ -12,7 +12,6 @@ interface TaskState {
   isLoading: boolean
   isCreatingTask: boolean
   creatingParentId: string | null
-  searchQuery: string
 
   fetchTasks: () => Promise<void>
   selectTask: (id: string) => void
@@ -23,24 +22,7 @@ interface TaskState {
   startCreateTask: (parentId: string | null) => void
   cancelCreateTask: () => void
   reorderRoots: (newOrder: string[]) => void
-  setSearchQuery: (query: string) => void
-  searchTasks: (query: string) => TaskNode[]
   getNextNumbering: (parentId: string | null) => string
-}
-
-function flattenTasks(roots: TaskNode[]): TaskNode[] {
-  const result: TaskNode[] = []
-  const visited = new Set<string>()
-  function traverse(tasks: TaskNode[]) {
-    for (const task of tasks) {
-      if (visited.has(task.id)) continue
-      visited.add(task.id)
-      result.push(task)
-      traverse(task.children)
-    }
-  }
-  traverse(roots)
-  return result
 }
 
 export const useTaskStore = create<TaskState>((set, get) => ({
@@ -52,7 +34,6 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   isLoading: false,
   isCreatingTask: false,
   creatingParentId: null,
-  searchQuery: '',
 
   fetchTasks: async () => {
     set({ isLoading: true })
@@ -239,19 +220,5 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       return `${nextNum}`
     }
     return `${parent.numbering}.${nextNum}`
-  },
-
-  setSearchQuery: (query: string) => {
-    set({ searchQuery: query })
-  },
-
-  searchTasks: (query: string) => {
-    const { roots } = get()
-    const allTasks = flattenTasks(roots)
-    const lowerQuery = query.toLowerCase()
-    return allTasks.filter(task =>
-      task.title.toLowerCase().includes(lowerQuery) ||
-      task.description.toLowerCase().includes(lowerQuery)
-    )
   },
 }))

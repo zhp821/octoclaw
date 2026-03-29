@@ -2,14 +2,14 @@ import { useEffect, useRef, useState } from 'react'
 import { useChatStore } from '@/stores/chatStore'
 import { useTaskStore } from '@/stores/taskStore'
 import { connectChat, sendMessage as wsSendMessage, getConnectionState, switchSession } from '@/services/chat/controller'
-import type { ChatMessage as ChatMessageType, TaskNode, UploadedFile } from '@/types'
+import type { ChatMessage as ChatMessageType, TaskNode } from '@/types'
 import { ChatMessage } from './ChatMessage'
 import { ChatInput } from './ChatInput'
 import { TypingIndicator } from './TypingIndicator'
 import { OctoClawLogo } from '@/components/Layout/Header'
+
 import axios from 'axios'
 import { mediaApi } from '@/services/api/media'
-import { configApi } from '@/services/api.config'
 
 const api = axios.create({
   baseURL: '/octo/api',
@@ -59,8 +59,7 @@ export function ChatPanel() {
 const selectedTask = selectedId ? findTask(selectedId) : null
   const rootTask = selectedId ? findRootTask(selectedId) : null
   
-  // 从 plan 数据中获取 sessionId（优先使用 globalSessionId，兼容 executionSessionId）
-  const sessionId = rootTask?.globalSessionId || rootTask?.executionSessionId || (rootTask ? `agent:main:octo:global:${rootTask.id}` : 'global')
+  const sessionId = rootTask?.globalSessionId || (rootTask ? `agent:main:octo:global:${rootTask.id}` : 'global')
   const session = sessions.get(sessionId)
   const taskMessages = session?.messages || []
   
@@ -116,6 +115,13 @@ const selectedTask = selectedId ? findTask(selectedId) : null
         toggleExpand(response.data.data.planId)
         selectTask(response.data.data.planId)
         switchSession(response.data.data.sessionId)
+
+        useChatStore.getState().addMessage(response.data.data.sessionId, {
+          id: `msg-user-${Date.now()}`,
+          role: 'user',
+          content,
+          timestamp: Date.now(),
+        })
       }
     } catch (err) {
       console.error('创建任务失败:', err)
@@ -179,6 +185,7 @@ const selectedTask = selectedId ? findTask(selectedId) : null
         showCreate={!selectedId}
         disabled={connectionState === 'connecting'}
         placeholder={selectedId ? '输入消息...' : '描述你想创建的任务...'}
+        planId={rootTask?.id}
       />
     </div>
   )

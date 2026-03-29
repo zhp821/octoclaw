@@ -1,7 +1,8 @@
 import { useState, useRef } from 'react'
-import { X, Plus, Send, Paperclip } from 'lucide-react'
 import { mediaApi } from '@/services/api/media'
-import { FILE_UPLOAD_CONFIG, isAllowedExtension, formatFileSize, getAllowedExtensionsString } from '@/config/fileUpload'
+import { FILE_UPLOAD_CONFIG, formatFileSize, isAllowedExtension, getAllowedExtensionsString } from '@/config/fileUpload'
+import { Paperclip, X, Plus, Send } from 'lucide-react'
+import { DirSelector } from '@/components/shared/DirSelector'
 
 interface FileAttachment {
   file: File
@@ -14,9 +15,10 @@ interface Props {
   disabled?: boolean
   placeholder?: string
   showCreate?: boolean
+  planId?: string | null
 }
 
-export function ChatInput({ onSend, onCreate, disabled, placeholder, showCreate }: Props) {
+export function ChatInput({ onSend, onCreate, disabled, placeholder, showCreate, planId }: Props) {
   const [content, setContent] = useState('')
   const [attachments, setAttachments] = useState<FileAttachment[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -49,25 +51,22 @@ export function ChatInput({ onSend, onCreate, disabled, placeholder, showCreate 
     for (let i = 0; i < items.length; i++) {
       const item = items[i]
       
-      // 支持文件类型（包括复制的文件和图片）
       if (item.kind === 'file') {
         e.preventDefault()
         const file = item.getAsFile()
         if (file) {
-          // 验证文件类型
           if (!isAllowedExtension(file.name)) {
             alert(`不支持的文件类型：${file.name}\n支持的类型：${FILE_UPLOAD_CONFIG.allowedExtensions.join(', ')}`)
             continue
           }
           
-          // 验证文件大小
           if (file.size > FILE_UPLOAD_CONFIG.maxFileSize) {
             alert(`文件过大：${file.name}\n最大限制：${formatFileSize(FILE_UPLOAD_CONFIG.maxFileSize)}`)
             continue
           }
           
           try {
-            const result = await mediaApi.uploadFile(file)
+            await mediaApi.uploadFile(file)
             setAttachments(prev => [...prev, {
               file,
               preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined,
@@ -179,27 +178,29 @@ export function ChatInput({ onSend, onCreate, disabled, placeholder, showCreate 
       
       {/* 底部工具栏 */}
       <div className="flex gap-1 items-center justify-between px-1 pb-1">
-        {/* 左侧：附件按钮 */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept={getAllowedExtensionsString()}
-          onChange={handleFileChange}
-          multiple
-          className="hidden"
-        />
-        <button
-          type="button"
-          onClick={handleFileClick}
-          className="p-1 rounded transition-colors hover:bg-gray-100"
-          title="添加附件"
-        >
-          <Paperclip className="w-3.5 h-3.5" style={{ color: 'var(--text-secondary)' }} />
-        </button>
+        {/* 左侧：附件 + 目录选择 */}
+        <div className="flex items-center gap-1">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept={getAllowedExtensionsString()}
+            onChange={handleFileChange}
+            multiple
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={handleFileClick}
+            className="p-1 rounded transition-colors hover:bg-gray-100"
+            title="添加附件"
+          >
+            <Paperclip className="w-3.5 h-3.5" style={{ color: 'var(--text-secondary)' }} />
+          </button>
+          <DirSelector planId={planId} />
+        </div>
         
         {/* 右侧：创建和发送按钮 */}
         <div className="flex gap-1 items-center">
-          {/* 创建按钮 */}
           {showCreate && (
             <button
               className="p-1 rounded transition-colors hover:opacity-80 flex items-center justify-center"
@@ -218,7 +219,6 @@ export function ChatInput({ onSend, onCreate, disabled, placeholder, showCreate 
             </button>
           )}
           
-          {/* 发送按钮 */}
           <button
             className="p-1 rounded transition-colors hover:opacity-80 flex items-center justify-center"
             style={{ 

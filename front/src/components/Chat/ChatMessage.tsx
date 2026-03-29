@@ -1,17 +1,16 @@
-import type { ChatMessage } from '@/types'
-import { parseTimestamp } from '@/utils/timestamp'
+import type { ChatMessage as ChatMessageType } from '@/types'
 import { OctoClawLogo } from '@/components/Layout/Header'
 
 interface Props {
-  message: ChatMessage
+  message: ChatMessageType
 }
 
 export function ChatMessage({ message }: Props) {
   const isUser = message.role === 'user'
-  
-  const formatTime = (timestamp: string) => {
+
+  const formatTime = (timestamp: number) => {
     try {
-      const date = parseTimestamp(timestamp)
+      const date = new Date(timestamp)
       return date.toLocaleDateString('zh-CN', { year: '2-digit', month: '2-digit', day: '2-digit' }) + ' ' +
              date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
     } catch {

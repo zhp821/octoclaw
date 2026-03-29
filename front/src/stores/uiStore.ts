@@ -2,16 +2,10 @@ import { create } from 'zustand'
 
 interface UIState {
   theme: 'dark' | 'light'
-  sidebarCollapsed: boolean
-  chatPanelOpen: boolean
-  mobileChatOpen: boolean
-
   toggleTheme: () => void
-  setTheme: (theme: 'dark' | 'light') => void
-  toggleSidebar: () => void
-  toggleChatPanel: () => void
-  setMobileChatOpen: (open: boolean) => void
 }
+
+
 
 const THEME_KEY = 'wbs-theme'
 
@@ -30,9 +24,6 @@ export const useUIStore = create<UIState>((set) => {
 
   return {
     theme: initialTheme,
-    sidebarCollapsed: false,
-    chatPanelOpen: true,
-    mobileChatOpen: false,
 
     toggleTheme: () => {
       set((state) => {
@@ -46,19 +37,5 @@ export const useUIStore = create<UIState>((set) => {
         return { theme: newTheme }
       })
     },
-
-    setTheme: (theme) => {
-      localStorage.setItem(THEME_KEY, theme)
-      if (theme === 'light') {
-        document.documentElement.classList.add('light')
-      } else {
-        document.documentElement.classList.remove('light')
-      }
-      set({ theme })
-    },
-
-    toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
-    toggleChatPanel: () => set((state) => ({ chatPanelOpen: !state.chatPanelOpen })),
-    setMobileChatOpen: (open) => set({ mobileChatOpen: open }),
   }
 })

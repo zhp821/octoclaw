@@ -1,5 +1,3 @@
-import type { Timestamp } from '../../utils/timestamp'
-import { formatTimestamp } from '../../utils/timestamp'
 import { useChatStore } from '../../stores/chatStore'
 import type { ChatMessage } from '../../types'
 
@@ -7,7 +5,7 @@ export interface PicoMessage {
   type: string
   id?: string
   session_id?: string
-  timestamp?: number | string | Timestamp
+  timestamp?: number | string
   payload?: Record<string, unknown>
 }
 
@@ -21,7 +19,7 @@ export function handlePicoMessage(
       id: `session-error-${Date.now()}`,
       role: 'system',
       content: 'Session error: Reconnecting...',
-      timestamp: formatTimestamp(),
+      timestamp: Date.now(),
     })
     return
   }
@@ -31,11 +29,9 @@ export function handlePicoMessage(
   switch (message.type) {
     case 'message.create': {
       const content = (message.payload?.content as string) ?? ''
-      const timestamp: Timestamp = typeof message.timestamp === 'number'
-        ? formatTimestamp(new Date(message.timestamp))
-        : typeof message.timestamp === 'string'
-          ? message.timestamp
-          : formatTimestamp()
+      const timestamp: number = typeof message.timestamp === 'number'
+        ? message.timestamp
+        : Date.now()
       const assistantMessage: ChatMessage = {
         id: message.id ?? `msg-${Date.now()}`,
         role: 'assistant',
@@ -70,7 +66,7 @@ export function handlePicoMessage(
         id: `error-${Date.now()}`,
         role: 'system',
         content: `Error: ${error}`,
-        timestamp: formatTimestamp(),
+        timestamp: Date.now(),
       })
       store.setTyping(expectedSessionId, false)
       break
@@ -84,19 +80,4 @@ export function handlePicoMessage(
       console.warn('Unknown message type:', message.type)
     }
   }
-}
-
-export function formatMessageTimestamp(
-  timestamp?: number | string | Timestamp
-): number {
-  if (typeof timestamp === 'number') {
-    return timestamp
-  }
-  if (typeof timestamp === 'string') {
-    const parsed = Date.parse(timestamp)
-    if (!isNaN(parsed)) {
-      return parsed
-    }
-  }
-  return Date.now()
 }

@@ -1,7 +1,3 @@
-import type { Timestamp } from '@/utils/timestamp'
-export type { Timestamp } from '@/utils/timestamp'
-export type { UploadedFile } from './uploadedFile'
-
 export type TaskStatus = 'todo' | 'in-progress' | 'blocked' | 'done' | 'cancel';
 
 export type MessageRole = 'user' | 'assistant' | 'system';
@@ -19,24 +15,11 @@ export interface QualityGate {
   schema?: string;
 }
 
-export interface TaskChanges {
-  title?: string;
-  description?: string;
-  steps?: string[];
-  assigneeId?: string;
-  qualityGate?: QualityGate;
-  dependencies?: string[];
-  status?: TaskStatus;
-}
-
 export interface ChatMessage {
   id: string;
   role: MessageRole;
   content: string;
-  timestamp: Timestamp;
-  relatedAction?: 'decompose' | 'modify' | 'create';
-  pendingChanges?: TaskChanges;
-  metadata?: Record<string, unknown>;
+  timestamp: number;
 }
 
 export interface TaskNode {
@@ -57,27 +40,8 @@ export interface TaskNode {
   isDecomposing?: boolean;
   requiresReview: boolean;
   
-  agentId?: string;
-  
   globalSessionId?: string;
   dir?: string;
-  
-  executionSessionId?: string;
-  executionAgentId?: string;
-  executionMessages?: ChatMessage[];
-  executionRetryCount?: number;
-}
-
-export interface PlanData {
-  id: string;
-  title: string;
-  status: TaskStatus;
-  order?: number;
-  
-  globalSessionId?: string;
-  globalMessages?: ChatMessage[];
-  
-  children: TaskNode[];
 }
 
 export interface ProjectData {

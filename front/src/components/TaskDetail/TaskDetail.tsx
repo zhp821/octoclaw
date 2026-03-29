@@ -1,98 +1,10 @@
 import { useTaskStore } from '@/stores/taskStore'
-import { useChatStore } from '@/stores/chatStore'
-import { configApi } from '@/services/api.config'
 import { TaskSteps } from './TaskSteps'
 import { QualityGate } from './QualityGate'
 import { TaskDependencies } from './TaskDependencies'
 import { Badge } from '@/components/shared/Badge'
+import { DirSelector } from '@/components/shared/DirSelector'
 import { NewTaskForm } from './NewTaskForm'
-import { useState, useEffect } from 'react'
-
-function DirSelector({ planId }: { planId: string | null }) {
-  const { getPlanDir, setPlanDir } = useChatStore()
-  const [isEditing, setIsEditing] = useState(false)
-  const [editValue, setEditValue] = useState('')
-
-  const dir = planId ? getPlanDir(planId) : ''
-
-  useEffect(() => {
-    setEditValue(dir)
-  }, [dir])
-
-  const handleSave = async () => {
-    const trimmed = editValue.trim()
-    if (trimmed && planId) {
-      setPlanDir(planId, trimmed)
-      try {
-        await configApi.updatePlanDir(planId, trimmed)
-      } catch (err) {
-        console.error('保存目录失败:', err)
-      }
-    }
-    setIsEditing(false)
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSave()
-    } else if (e.key === 'Escape') {
-      setEditValue(dir)
-      setIsEditing(false)
-    }
-  }
-
-  const handleSelectDir = async () => {
-    // 直接进入编辑模式，用户可以粘贴或输入完整路径
-    setEditValue(dir)
-    setIsEditing(true)
-  }
-
-  if (!planId) return null
-
-  if (isEditing) {
-    return (
-      <div className="flex items-center gap-1">
-        <input
-          type="text"
-          value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onBlur={handleSave}
-          className="text-xs px-2 py-0.5 rounded border"
-          style={{ 
-            backgroundColor: 'var(--bg-secondary)', 
-            color: 'var(--text-primary)',
-            borderColor: 'var(--border-color)',
-            minWidth: '300px'
-          }}
-          autoFocus
-        />
-      </div>
-    )
-  }
-
-  return (
-    <div className="flex items-center gap-1">
-      <div 
-        className="flex items-center gap-1 cursor-pointer hover:opacity-80 px-2 py-1 rounded border"
-        style={{ backgroundColor: 'rgba(139,92,246,0.05)', borderColor: 'rgba(139,92,246,0.2)' }}
-        onClick={() => {
-          setEditValue(dir)
-          setIsEditing(true)
-        }}
-        title="点击编辑工作路径"
-      >
-        <span className="text-xs font-medium" style={{ color: 'var(--brand-purple)' }}>工作路径:</span>
-        <span 
-          className="text-xs"
-          style={{ color: 'var(--text-secondary)' }}
-        >
-          {dir || '(点击设置)'}
-        </span>
-      </div>
-    </div>
-  )
-}
 
 export function TaskDetail() {
   const { selectedId, roots, isCreatingTask, creatingParentId, cancelCreateTask } = useTaskStore()

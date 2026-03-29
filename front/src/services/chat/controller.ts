@@ -1,16 +1,8 @@
-import {
-  normalizeWsUrlForBrowser,
-  invalidateSocket,
-  isCurrentSocket,
-  setCurrentSocket,
-  getCurrentSocket,
-  getCurrentGeneration,
-  getCurrentSessionId,
-} from './websocket'
+import { normalizeWsUrlForBrowser, invalidateSocket, isCurrentSocket, setCurrentSocket, getCurrentSocket, getCurrentGeneration, } from './websocket'
 import type { PicoMessage } from './protocol'
 import { handlePicoMessage } from './protocol'
 import { useChatStore } from '../../stores/chatStore'
-import { formatTimestamp } from '../../utils/timestamp'
+
 
 interface PicoTokenResponse {
   token: string
@@ -209,54 +201,51 @@ export function disconnectChat(): void {
   messageQueue = []
 }
 
+function getDirForSession(sessionId: string | null): string {
+  if (!sessionId) return useChatStore.getState().currentDir
+  const { sessions, planDirs, currentDir } = useChatStore.getState()
+  const session = sessions.get(sessionId)
+  if (session?.planId && planDirs.get(session.planId)) {
+    return planDirs.get(session.planId)!
+  }
+  return currentDir
+}
+
+function buildContentWithDir(content: string, sessionId: string | null): string {
+  const dir = getDirForSession(sessionId)
+  if (!dir) return content
+  return `[系统提示：当前工作目录是 ${dir}]\n\n${content}`
+}
+
 export function sendMessage(content: string): void {
   if (!content.trim()) return
 
   const timestamp = Date.now()
   const sessionId = state.sessionId
+  const contentWithDir = buildContentWithDir(content, sessionId)
 
-  // 从 sessionId 提取 planId（格式: agent:main:octo:global:${planId}）
-  let planId: string | null = null
-  if (sessionId && sessionId.startsWith('agent:main:octo:global:')) {
-    planId = sessionId.replace('agent:main:octo:global:', '')
-  }
-
-  // 获取当前任务对应的目录
-  const chatState = useChatStore.getState()
-  const dir = planId ? chatState.getPlanDir(planId) : chatState.currentDir
-  const dirHint = dir ? `[系统提示：当前工作目录为 ${dir}]\n` : ''
-  const fullContent = dirHint + content
-
-  // 乐观更新使用原始 content（不含 dirHint，对用户透明）
   if (sessionId) {
     useChatStore.getState().addMessage(sessionId, {
       id: `msg-user-${timestamp}`,
       role: 'user',
       content,
-      timestamp: formatTimestamp(),
+      timestamp: Date.now(),
     })
   }
 
-  // WebSocket 发送带 dirHint 的完整内容
   if (state.connected && getCurrentSocket()) {
     getCurrentSocket()!.send(JSON.stringify({
       type: 'message.send',
       session_id: sessionId,
-      payload: { content: fullContent },
+      payload: { content: contentWithDir },
       timestamp,
     }))
   } else {
-    messageQueue.push({ content: fullContent, timestamp })
+    messageQueue.push({ content: contentWithDir, timestamp })
   }
 }
 
-export function initializeChat(): void {
-  if (state.sessionId) {
-    connectWebSocket(state.sessionId)
-  }
-}
-
-export function switchSession(sessionId: string): void {
+export function switchSession(sessionId: string) {
   if (state.sessionId === sessionId) {
     return
   }
@@ -265,6 +254,8 @@ export function switchSession(sessionId: string): void {
   state.sessionId = sessionId
   state.reconnectAttempts = 0
   messageQueue = []
+
+
 
   connectWebSocket(sessionId)
 }

@@ -1,5 +1,10 @@
 import type { TaskNode, Agent, ProjectData, TaskStatus, QualityGate } from '@/types'
-import { STATUS_CONFIG, getRandomStatus } from '@/config/status'
+import { STATUS_CONFIG } from '@/config/status'
+
+function getRandomStatus(): TaskStatus {
+  const statuses: TaskStatus[] = ['todo', 'in-progress', 'blocked', 'done', 'cancel']
+  return statuses[Math.floor(Math.random() * statuses.length)]
+}
 
 const TITLE_PREFIX = ['Design', 'Develop', 'Test', 'Deploy', 'Research', 'Plan']
 

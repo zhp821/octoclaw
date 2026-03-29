@@ -63,7 +63,3 @@ export function getCurrentSocket(): WebSocket | null {
 export function getCurrentGeneration(): number {
   return currentGeneration;
 }
-
-export function getCurrentSessionId(): string | null {
-  return currentSessionId;
-}
