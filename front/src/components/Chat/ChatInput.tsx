@@ -171,7 +171,7 @@ export function ChatInput({ onSend, onCreate, disabled, placeholder, showCreate,
       {/* 输入框 */}
       <textarea
         ref={textareaRef}
-        className="flex-1 px-3 py-3 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 transition-all min-h-[50px] max-h-[160px] border"
+        className="w-full px-3 py-3 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 transition-all min-h-[50px] max-h-[160px] border"
         style={{ 
           backgroundColor: 'var(--bg-secondary)', 
           color: 'var(--text-primary)',
