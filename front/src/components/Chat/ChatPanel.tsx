@@ -182,7 +182,7 @@ const selectedTask = selectedId ? findTask(selectedId) : null
       <ChatInput
         onSend={handleSend}
         onCreate={handleCreate}
-        showCreate={!selectedId}
+        showCreate={true}
         disabled={connectionState === 'connecting'}
         placeholder={selectedId ? '输入消息...' : '描述你想创建的任务...'}
         planId={rootTask?.id}

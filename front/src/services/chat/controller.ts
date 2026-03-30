@@ -214,7 +214,7 @@ function getDirForSession(sessionId: string | null): string {
 function buildContentWithDir(content: string, sessionId: string | null): string {
   const dir = getDirForSession(sessionId)
   if (!dir) return content
-  return `[系统提示：当前工作目录是 ${dir}]\n\n${content}`
+  return `[系统提示：当前选择的工作目录是 ${dir}.请先使用brainstorming技能细化用户需求.]\n\n${content}`
 }
 
 export function sendMessage(content: string): void {
