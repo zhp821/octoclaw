@@ -15,7 +15,7 @@ export function DesktopLayout() {
   const { fetchTasks } = useTaskStore()
   const containerRef = useRef<HTMLDivElement>(null)
   const [sidebarWidth, setSidebarWidth] = useState(280)
-  const [chatWidth, setChatWidth] = useState(380)
+  const [chatWidth, setChatWidth] = useState(475)
   const [isResizingSidebar, setIsResizingSidebar] = useState(false)
   const [isResizingChat, setIsResizingChat] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
