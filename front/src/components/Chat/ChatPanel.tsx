@@ -228,24 +228,9 @@ const selectedTask = selectedId ? findTask(selectedId) : null
         )}
         {isTyping && <TypingIndicator />}
         <div ref={messagesEndRef} />
-        
         {showScrollButtons && (
-          <div className="absolute bottom-2 left-0 right-0 flex justify-between px-4 pointer-events-none">
-            <button
-              onClick={scrollToPrevUserMessage}
-              disabled={userMessageIndices.length === 0}
-              className="pointer-events-auto p-1 rounded hover:opacity-60 disabled:opacity-30"
-              title="上一个用户消息"
-            >
-              <ChevronUp className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
-            </button>
-            <button
-              onClick={scrollToBottom}
-              className="pointer-events-auto p-1 rounded hover:opacity-60"
-              title="滚动到底部"
-            >
-              <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
-            </button>
+          <div className="flex justify-center">
+            <button onClick={scrollToBottom} className="text-2xl opacity-50">⬇</button>
           </div>
         )}
       </div>
