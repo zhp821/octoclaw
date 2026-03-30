@@ -56,6 +56,14 @@ export function handlePicoMessage(
 
     case 'typing.stop': {
       store.setTyping(expectedSessionId, false)
+      const { sessions } = store as any
+      const session = sessions.get(expectedSessionId)
+      if (session && session.messages && session.messages.length > 0) {
+        const lastMsg = session.messages[session.messages.length - 1]
+        if (lastMsg.role === 'assistant') {
+          store.updateMessage(expectedSessionId, lastMsg.id, { completed: true })
+        }
+      }
       break
     }
 

@@ -33,6 +33,7 @@ export interface ChatMessage {
   role: MessageRole;
   content: string;
   timestamp: number;
+  completed?: boolean;
 }
 
 export interface TaskNode {
