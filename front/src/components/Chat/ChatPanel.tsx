@@ -7,6 +7,7 @@ import { ChatMessage } from './ChatMessage'
 import { ChatInput } from './ChatInput'
 import { TypingIndicator } from './TypingIndicator'
 import { OctoClawLogo } from '@/components/Layout/Header'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 
 import axios from 'axios'
 import { mediaApi } from '@/services/api/media'
@@ -25,6 +26,9 @@ export function ChatPanel() {
   const { selectedId, roots, fetchTasks, selectTask, toggleExpand } = useTaskStore()
   const { sessions, isTyping, connectionState, setConnectionState } = useChatStore()
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
+  const [userMessageIndices, setUserMessageIndices] = useState<number[]>([])
+  const [currentUserIndex, setCurrentUserIndex] = useState(-1)
   
   function findTask(id: string): TaskNode | null {
     const visited = new Set<string>()
@@ -80,6 +84,30 @@ const selectedTask = selectedId ? findTask(selectedId) : null
     
     return () => clearInterval(interval)
   }, [sessionId])
+
+  useEffect(() => {
+    const indices = taskMessages
+      .map((m, i) => m.role === 'user' ? i : -1)
+      .filter(i => i !== -1)
+    setUserMessageIndices(indices)
+  }, [taskMessages])
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    setCurrentUserIndex(-1)
+  }
+
+  const scrollToPrevUserMessage = () => {
+    if (userMessageIndices.length === 0) return
+    const currentIdx = currentUserIndex === -1 ? userMessageIndices.length : currentUserIndex
+    const prevIdx = currentIdx > 0 ? currentIdx - 1 : 0
+    setCurrentUserIndex(prevIdx)
+    const msgIndex = userMessageIndices[prevIdx]
+    const msgElements = messagesContainerRef.current?.children
+    if (msgElements && msgElements[msgIndex]) {
+      msgElements[msgIndex].scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }
 
   const taskDisplayName = selectedTask 
     ? (selectedTask.numbering ? `${selectedTask.numbering} ${selectedTask.title}` : selectedTask.title)
@@ -156,7 +184,25 @@ const selectedTask = selectedId ? findTask(selectedId) : null
         </div>
       </div>
       
-      <div className="flex-1 overflow-y-auto p-3 space-y-3">
+      <div className="flex items-center gap-1 px-2 py-1 border-b" style={{ borderColor: 'var(--border-color)' }}>
+        <button
+          onClick={scrollToPrevUserMessage}
+          disabled={userMessageIndices.length === 0}
+          className="p-1 rounded hover:opacity-80 disabled:opacity-30"
+          title="上一个用户消息"
+        >
+          <ChevronUp className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
+        </button>
+        <button
+          onClick={scrollToBottom}
+          className="p-1 rounded hover:opacity-80"
+          title="滚动到底部"
+        >
+          <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-3 space-y-3" ref={messagesContainerRef}>
         {taskMessages.length === 0 ? (
           <div className="text-center text-sm py-8" style={{ color: 'var(--text-secondary)' }}>
             {selectedId ? (
