@@ -24,12 +24,17 @@ export function ChatInput({ onSend, onCreate, disabled, placeholder, showCreate,
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  useEffect(() => {
+  const adjustTextareaHeight = () => {
     const textarea = textareaRef.current
     if (!textarea) return
     textarea.style.height = 'auto'
     textarea.style.height = Math.min(Math.max(textarea.scrollHeight, 50), 160) + 'px'
-  }, [content])
+  }
+
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setContent(e.target.value)
+    setTimeout(adjustTextareaHeight, 0)
+  }
 
   const handleSubmit = () => {
     if (content.trim()) {
@@ -178,7 +183,7 @@ export function ChatInput({ onSend, onCreate, disabled, placeholder, showCreate,
         } as React.CSSProperties}
         rows={1}
         value={content}
-        onChange={e => setContent(e.target.value)}
+        onChange={handleContentChange}
         onKeyDown={handleKeyDown}
         onPaste={handlePaste}
         disabled={disabled}
