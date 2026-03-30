@@ -184,25 +184,7 @@ const selectedTask = selectedId ? findTask(selectedId) : null
         </div>
       </div>
       
-      <div className="flex items-center gap-1 px-2 py-1 border-b" style={{ borderColor: 'var(--border-color)' }}>
-        <button
-          onClick={scrollToPrevUserMessage}
-          disabled={userMessageIndices.length === 0}
-          className="p-1 rounded hover:opacity-80 disabled:opacity-30"
-          title="上一个用户消息"
-        >
-          <ChevronUp className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
-        </button>
-        <button
-          onClick={scrollToBottom}
-          className="p-1 rounded hover:opacity-80"
-          title="滚动到底部"
-        >
-          <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
-        </button>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-3 space-y-3" ref={messagesContainerRef}>
+      <div className="flex-1 overflow-y-auto p-3 space-y-3 relative" ref={messagesContainerRef}>
         {taskMessages.length === 0 ? (
           <div className="text-center text-sm py-8" style={{ color: 'var(--text-secondary)' }}>
             {selectedId ? (
@@ -223,6 +205,24 @@ const selectedTask = selectedId ? findTask(selectedId) : null
         )}
         {isTyping && <TypingIndicator />}
         <div ref={messagesEndRef} />
+        
+        <div className="absolute bottom-2 left-2 right-2 flex justify-between pointer-events-none">
+          <button
+            onClick={scrollToPrevUserMessage}
+            disabled={userMessageIndices.length === 0}
+            className="pointer-events-auto p-1.5 rounded-full shadow-md hover:opacity-80 disabled:opacity-30 bg-white dark:bg-gray-800"
+            title="上一个用户消息"
+          >
+            <ChevronUp className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
+          </button>
+          <button
+            onClick={scrollToBottom}
+            className="pointer-events-auto p-1.5 rounded-full shadow-md hover:opacity-80 bg-white dark:bg-gray-800"
+            title="滚动到底部"
+          >
+            <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
+          </button>
+        </div>
       </div>
       
       <ChatInput
