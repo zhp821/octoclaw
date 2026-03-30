@@ -207,7 +207,7 @@ const selectedTask = selectedId ? findTask(selectedId) : null
         </div>
       </div>
       
-      <div className="flex-1 overflow-y-auto p-3 space-y-3 relative" ref={messagesContainerRef} onClick={() => setShowScrollButtons(false)}>
+      <div className="flex-1 overflow-y-auto p-3 space-y-3 relative" ref={messagesContainerRef}>
         {taskMessages.length === 0 ? (
           <div className="text-center text-sm py-8" style={{ color: 'var(--text-secondary)' }}>
             {selectedId ? (
@@ -228,14 +228,14 @@ const selectedTask = selectedId ? findTask(selectedId) : null
         )}
         {isTyping && <TypingIndicator />}
         <div ref={messagesEndRef} />
+        
+        {showScrollButtons && (
+          <div className="flex justify-center gap-4 py-1">
+            <button onClick={scrollToPrevUserMessage} disabled={userMessageIndices.length === 0} className="text-sm opacity-30 hover:opacity-60">⬆</button>
+            <button onClick={scrollToBottom} className="text-sm opacity-30 hover:opacity-60">⬇</button>
+          </div>
+        )}
       </div>
-
-      {showScrollButtons && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-          <button onClick={scrollToPrevUserMessage} disabled={userMessageIndices.length === 0} className="text-sm opacity-30">⬆</button>
-          <button onClick={scrollToBottom} className="text-sm opacity-30">⬇</button>
-        </div>
-      )}
 
       <ChatInput
         onSend={handleSend}
