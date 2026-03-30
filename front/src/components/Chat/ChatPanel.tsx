@@ -91,18 +91,7 @@ const selectedTask = selectedId ? findTask(selectedId) : null
       .map((m, i) => m.role === 'user' ? i : -1)
       .filter(i => i !== -1)
     setUserMessageIndices(indices)
-  }, [taskMessages])
-
-  useEffect(() => {
-    const container = messagesContainerRef.current
-    if (!container) return
-    const handleScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = container
-      setShowScrollButtons(scrollHeight > clientHeight + 50)
-    }
-    handleScroll()
-    container.addEventListener('scroll', handleScroll)
-    return () => container.removeEventListener('scroll', handleScroll)
+    setShowScrollButtons(taskMessages.length > 3)
   }, [taskMessages])
 
   const scrollToBottom = () => {
@@ -170,7 +159,7 @@ const selectedTask = selectedId ? findTask(selectedId) : null
   }
 
   return (
-    <div className="flex flex-col h-full" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+    <div className="flex flex-col h-full relative" style={{ backgroundColor: 'var(--bg-secondary)' }}>
       <div className="p-2 border-b flex items-center justify-between flex-shrink-0" style={{ borderColor: 'var(--border-color)' }}>
         <div className="flex items-center gap-2">
           <OctoClawLogo className="w-5 h-5" />
@@ -218,29 +207,27 @@ const selectedTask = selectedId ? findTask(selectedId) : null
         )}
         {isTyping && <TypingIndicator />}
         <div ref={messagesEndRef} />
-        
-        <div className="absolute bottom-2 left-2 right-2 flex justify-between pointer-events-none">
-          {showScrollButtons && (
-            <>
-              <button
-                onClick={scrollToPrevUserMessage}
-                disabled={userMessageIndices.length === 0}
-                className="pointer-events-auto p-1.5 rounded-full shadow-md hover:opacity-80 disabled:opacity-30 bg-white dark:bg-gray-800"
-                title="上一个用户消息"
-              >
-                <ChevronUp className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
-              </button>
-              <button
-                onClick={scrollToBottom}
-                className="pointer-events-auto p-1.5 rounded-full shadow-md hover:opacity-80 bg-white dark:bg-gray-800"
-                title="滚动到底部"
-              >
-                <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
-              </button>
-            </>
-          )}
-        </div>
       </div>
+
+      {showScrollButtons && (
+        <div className="absolute bottom-16 left-4 flex gap-2 z-10">
+          <button
+            onClick={scrollToPrevUserMessage}
+            disabled={userMessageIndices.length === 0}
+            className="p-2 rounded-full shadow-lg hover:opacity-80 disabled:opacity-30 bg-white dark:bg-gray-800 border"
+            title="上一个用户消息"
+          >
+            <ChevronUp className="w-5 h-5" style={{ color: 'var(--text-primary)' }} />
+          </button>
+          <button
+            onClick={scrollToBottom}
+            className="p-2 rounded-full shadow-lg hover:opacity-80 bg-white dark:bg-gray-800 border"
+            title="滚动到底部"
+          >
+            <ChevronDown className="w-5 h-5" style={{ color: 'var(--text-primary)' }} />
+          </button>
+        </div>
+      )}
       
       <ChatInput
         onSend={handleSend}
