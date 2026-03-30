@@ -93,8 +93,7 @@ const selectedTask = selectedId ? findTask(selectedId) : null
       .filter(i => i !== -1)
     setUserMessageIndices(indices)
     
-    const container = messagesContainerRef.current
-    if (container && container.scrollHeight > container.clientHeight + 20) {
+    if (taskMessages.length > 4) {
       setShowScrollButtons(true)
       clearTimeout(scrollHideTimer)
       scrollHideTimer = setTimeout(() => setShowScrollButtons(false), 3000)
