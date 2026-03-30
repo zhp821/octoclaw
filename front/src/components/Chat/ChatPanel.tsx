@@ -228,13 +228,15 @@ const selectedTask = selectedId ? findTask(selectedId) : null
         )}
         {isTyping && <TypingIndicator />}
         <div ref={messagesEndRef} />
-        {showScrollButtons && (
-          <div className="flex justify-center">
-            <button onClick={scrollToBottom} className="text-2xl opacity-50">⬇</button>
-          </div>
-        )}
       </div>
-      
+
+      {showScrollButtons && (
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex gap-4 z-10">
+          <button onClick={scrollToPrevUserMessage} disabled={userMessageIndices.length === 0} className="text-lg opacity-60">⬆</button>
+          <button onClick={scrollToBottom} className="text-lg opacity-60">⬇</button>
+        </div>
+      )}
+
       <ChatInput
         onSend={handleSend}
         onCreate={handleCreate}
