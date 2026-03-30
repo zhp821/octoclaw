@@ -172,7 +172,9 @@ export function ChatInput({ onSend, onCreate, disabled, placeholder, showCreate,
           color: 'var(--text-primary)',
           borderColor: 'var(--border-color)',
           '--tw-ring-color': 'var(--brand-blue)',
-          '--tw-ring-opacity': '0.4'
+          '--tw-ring-opacity': '0.4',
+          overflow: 'hidden',
+          height: 'auto'
         } as React.CSSProperties}
         rows={1}
         value={content}
