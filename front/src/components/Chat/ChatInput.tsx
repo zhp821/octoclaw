@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { mediaApi } from '@/services/api/media'
 import { FILE_UPLOAD_CONFIG, formatFileSize, isAllowedExtension, getAllowedExtensionsString } from '@/config/fileUpload'
 import { Paperclip, X, Plus, Send } from 'lucide-react'
@@ -23,6 +23,13 @@ export function ChatInput({ onSend, onCreate, disabled, placeholder, showCreate,
   const [attachments, setAttachments] = useState<FileAttachment[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    const textarea = textareaRef.current
+    if (!textarea) return
+    textarea.style.height = 'auto'
+    textarea.style.height = Math.min(Math.max(textarea.scrollHeight, 50), 160) + 'px'
+  }, [content])
 
   const handleSubmit = () => {
     if (content.trim()) {
