@@ -92,6 +92,13 @@ const selectedTask = selectedId ? findTask(selectedId) : null
       .map((m, i) => m.role === 'user' ? i : -1)
       .filter(i => i !== -1)
     setUserMessageIndices(indices)
+    
+    const container = messagesContainerRef.current
+    if (container && container.scrollHeight > container.clientHeight + 20) {
+      setShowScrollButtons(true)
+      clearTimeout(scrollHideTimer)
+      scrollHideTimer = setTimeout(() => setShowScrollButtons(false), 3000)
+    }
   }, [taskMessages])
 
   useEffect(() => {
@@ -231,14 +238,14 @@ const selectedTask = selectedId ? findTask(selectedId) : null
               className="pointer-events-auto p-1 rounded hover:opacity-60 disabled:opacity-30"
               title="上一个用户消息"
             >
-              <ChevronUp className="w-4 h-4" style={{ color: 'var(--text-secondary)', opacity: 0.5 }} />
+              <ChevronUp className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
             </button>
             <button
               onClick={scrollToBottom}
               className="pointer-events-auto p-1 rounded hover:opacity-60"
               title="滚动到底部"
             >
-              <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-secondary)', opacity: 0.5 }} />
+              <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
             </button>
           </div>
         )}
