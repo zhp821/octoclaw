@@ -225,7 +225,7 @@ const selectedTask = selectedId ? findTask(selectedId) : null
       </div>
 
       {showScrollButtons && (
-        <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-10">
+        <div className="flex justify-center py-1">
           <button onClick={scrollToPrevUserMessage} disabled={userMessageIndices.length === 0} className="text-xs opacity-40 hover:opacity-80 mx-1">⬆</button>
           <button onClick={scrollToBottom} className="text-xs opacity-40 hover:opacity-80 mx-1">⬇</button>
         </div>
