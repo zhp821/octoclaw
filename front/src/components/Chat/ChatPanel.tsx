@@ -92,12 +92,6 @@ const selectedTask = selectedId ? findTask(selectedId) : null
       .map((m, i) => m.role === 'user' ? i : -1)
       .filter(i => i !== -1)
     setUserMessageIndices(indices)
-    
-    if (taskMessages.length > 4) {
-      setShowScrollButtons(true)
-      clearTimeout(scrollHideTimer)
-      scrollHideTimer = setTimeout(() => setShowScrollButtons(false), 3000)
-    }
   }, [taskMessages])
 
   useEffect(() => {
@@ -106,7 +100,7 @@ const selectedTask = selectedId ? findTask(selectedId) : null
     const handleScroll = () => {
       setShowScrollButtons(true)
       clearTimeout(scrollHideTimer)
-      scrollHideTimer = setTimeout(() => setShowScrollButtons(false), 3000)
+      scrollHideTimer = setTimeout(() => setShowScrollButtons(false), 2000)
     }
     container.addEventListener('scroll', handleScroll)
     return () => {
@@ -228,14 +222,14 @@ const selectedTask = selectedId ? findTask(selectedId) : null
         )}
         {isTyping && <TypingIndicator />}
         <div ref={messagesEndRef} />
-        
-        {showScrollButtons && (
-          <div className="flex justify-center gap-4 py-1">
-            <button onClick={scrollToPrevUserMessage} disabled={userMessageIndices.length === 0} className="text-sm opacity-30 hover:opacity-60">⬆</button>
-            <button onClick={scrollToBottom} className="text-sm opacity-30 hover:opacity-60">⬇</button>
-          </div>
-        )}
       </div>
+
+      {showScrollButtons && (
+        <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-10">
+          <button onClick={scrollToPrevUserMessage} disabled={userMessageIndices.length === 0} className="text-xs opacity-40 hover:opacity-80 mx-1">⬆</button>
+          <button onClick={scrollToBottom} className="text-xs opacity-40 hover:opacity-80 mx-1">⬇</button>
+        </div>
+      )}
 
       <ChatInput
         onSend={handleSend}
