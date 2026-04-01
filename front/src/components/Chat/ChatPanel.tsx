@@ -7,7 +7,6 @@ import { ChatMessage } from './ChatMessage'
 import { ChatInput } from './ChatInput'
 import { TypingIndicator } from './TypingIndicator'
 import { OctoClawLogo } from '@/components/Layout/Header'
-import { ChevronDown, ChevronUp } from 'lucide-react'
 
 import axios from 'axios'
 import { mediaApi } from '@/services/api/media'
@@ -30,7 +29,6 @@ export function ChatPanel() {
   const [userMessageIndices, setUserMessageIndices] = useState<number[]>([])
   const [currentUserIndex, setCurrentUserIndex] = useState(-1)
   const [showScrollButtons, setShowScrollButtons] = useState(false)
-  let scrollHideTimer: ReturnType<typeof setTimeout>
   
   function findTask(id: string): TaskNode | null {
     const visited = new Set<string>()
@@ -62,7 +60,7 @@ export function ChatPanel() {
     return findInTree(roots, taskId, null)
   }
   
-const selectedTask = selectedId ? findTask(selectedId) : null
+  const selectedTask = selectedId ? findTask(selectedId) : null
   const rootTask = selectedId ? findRootTask(selectedId) : null
   
   const sessionId = rootTask?.globalSessionId || (rootTask ? `agent:main:octo:global:${rootTask.id}` : 'global')
@@ -70,8 +68,11 @@ const selectedTask = selectedId ? findTask(selectedId) : null
   const taskMessages = session?.messages || []
   
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [taskMessages, isTyping])
+    const lastMsg = taskMessages[taskMessages.length - 1]
+    if (lastMsg?.role === 'user') {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [taskMessages.length])
   
   useEffect(() => {
     connectChat(sessionId)
@@ -92,21 +93,6 @@ const selectedTask = selectedId ? findTask(selectedId) : null
       .map((m, i) => m.role === 'user' ? i : -1)
       .filter(i => i !== -1)
     setUserMessageIndices(indices)
-  }, [taskMessages])
-
-  useEffect(() => {
-    const container = messagesContainerRef.current
-    if (!container) return
-    const handleScroll = () => {
-      setShowScrollButtons(true)
-      clearTimeout(scrollHideTimer)
-      scrollHideTimer = setTimeout(() => setShowScrollButtons(false), 2000)
-    }
-    container.addEventListener('scroll', handleScroll)
-    return () => {
-      container.removeEventListener('scroll', handleScroll)
-      clearTimeout(scrollHideTimer)
-    }
   }, [taskMessages])
 
   const scrollToBottom = () => {
@@ -201,7 +187,12 @@ const selectedTask = selectedId ? findTask(selectedId) : null
         </div>
       </div>
       
-      <div className="flex-1 overflow-y-auto p-3 space-y-3 relative" ref={messagesContainerRef}>
+      <div
+        className="flex-1 overflow-y-auto p-3 space-y-3 relative"
+        ref={messagesContainerRef}
+        onMouseEnter={() => setShowScrollButtons(true)}
+        onMouseLeave={() => setShowScrollButtons(false)}
+      >
         {taskMessages.length === 0 ? (
           <div className="text-center text-sm py-8" style={{ color: 'var(--text-secondary)' }}>
             {selectedId ? (
@@ -222,14 +213,16 @@ const selectedTask = selectedId ? findTask(selectedId) : null
         )}
         {isTyping && <TypingIndicator />}
         <div ref={messagesEndRef} />
-      </div>
 
-      {showScrollButtons && (
-        <div className="flex justify-center py-1">
-          <button onClick={scrollToPrevUserMessage} disabled={userMessageIndices.length === 0} className="text-xs opacity-40 hover:opacity-80 mx-1">⬆</button>
-          <button onClick={scrollToBottom} className="text-xs opacity-40 hover:opacity-80 mx-1">⬇</button>
-        </div>
-      )}
+        {showScrollButtons && (
+          <div className="sticky bottom-0 flex justify-center py-1 pointer-events-none">
+            <div className="flex gap-1 pointer-events-auto">
+              <button onClick={scrollToPrevUserMessage} disabled={userMessageIndices.length === 0} className="text-xs opacity-40 hover:opacity-80">⬆</button>
+              <button onClick={scrollToBottom} className="text-xs opacity-40 hover:opacity-80">⬇</button>
+            </div>
+          </div>
+        )}
+      </div>
 
       <ChatInput
         onSend={handleSend}
